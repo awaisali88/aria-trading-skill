@@ -1,0 +1,229 @@
+# ARIA Tool Inventory — Complete Reference
+
+All Clodds MCP tools available to ARIA. Load this file when you need the full parameter details for any tool category.
+
+---
+
+## CLODDS AI INTELLIGENCE (call directly — no API key cost)
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_research` | Deep AI research on any token, protocol, or narrative |
+| `clodds_opinion` | AI market opinion on a trade thesis or token setup |
+| `clodds_edge` | AI alpha discovery — underpriced setups, narrative gaps |
+| `clodds_ai_strategy` | AI-generated trading strategy for specific conditions |
+
+---
+
+## LIVE SIGNALS & MARKET FEEDS
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_signals` | Live trading signals — momentum, breakout, reversal alerts |
+| `clodds_news` | Crypto news filtered by token, protocol, or keyword |
+| `clodds_feeds` | Raw data feeds — volume spikes, liquidations, anomalies |
+| `clodds_divergence` | Price-vs-onchain divergence — leading reversal indicator |
+| `clodds_metrics` | On-chain metrics — TVL, active wallets, txn count, fees |
+| `clodds_analytics` | Token/portfolio analytics — wallet behavior, PnL, exposure |
+| `clodds_market_index` | Fear/greed, BTC dominance, altcoin cycle, sector rotation |
+
+---
+
+## ON-CHAIN & WALLET INTELLIGENCE
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_whale_tracking` | Large wallet moves — accumulation, distribution, smart money |
+| `clodds_token_security` | Rug check — mint authority, LP lock, holder concentration, honeypot |
+| `clodds_solana_balance` | Live SOL + all SPL token balances on connected wallet |
+| `clodds_solana_wallet` | Active wallet address |
+| `clodds_portfolio_summary` | Full portfolio across all connected venues |
+| `clodds_portfolio_pnl` | Real-time P&L per position |
+| `clodds_portfolio_positions` | All open positions across all exchanges |
+| `clodds_portfolio_sync` | Sync portfolio data across all venues |
+| `clodds_bags` | Holdings with entry prices and unrealized P&L |
+| `clodds_risk` | Portfolio risk — concentration, drawdown, correlation |
+
+---
+
+## PUMP.FUN INTELLIGENCE
+
+All called as `clodds_pumpfun <subcommand>`:
+
+| Subcommand | Returns |
+|------------|---------|
+| `trending` | Top tokens by 24h volume |
+| `hot` | Most active by 1h transaction count |
+| `gainers` | Top 24h price gainers |
+| `losers` | Top 24h price losers |
+| `new-hot` | Hottest new token launches by volume |
+| `new` | Most recently created tokens |
+| `graduated` | Tokens migrated from bonding curve to PumpSwap |
+| `graduating` | Tokens >60% bonding curve filled — near graduation |
+| `volatile` | Highest volatility tokens |
+| `koth` | King of the Hill candidates (30–35K mcap zone) |
+| `metas` | Trending narratives and meta plays |
+| `search <query>` | Search by keyword or narrative |
+| `stats <mint>` | Price, mcap, volume, liquidity, txns, price changes |
+| `token <mint>` | Full profile — description, socials, creator wallet, links |
+| `holders <mint>` | Top holder distribution and concentration |
+| `trades <mint> --limit N` | Recent trade history — buys vs sells |
+| `bonding <mint>` | Bonding curve state — % filled, SOL in curve, SOL to graduate |
+| `chart <mint> --interval Xm/Xh` | OHLCV data for technical analysis |
+| `similar <mint>` | Related or copycat tokens |
+| `best-pool <mint>` | Best execution venue — PumpSwap vs Jupiter vs Raydium |
+| `quote <mint> <amount> <buy/sell>` | On-chain accurate price quote before trading |
+| `user-coins <address>` | All tokens created by a wallet |
+| `sol-price` | Current SOL/USD price |
+| `latest-trades --limit N` | Platform-wide recent trades |
+
+---
+
+## CEX PRICE & MARKET DATA
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_binance_spot_price` | Live Binance spot price (e.g. SOLUSDT, BTCUSDT) |
+| `clodds_bybit_spot_price` | Live Bybit spot price |
+| `clodds_mexc_spot_price` | Live MEXC spot price |
+| `clodds_binance_spot_history` | Binance recent trade history |
+| `clodds_bybit_spot_history` | Bybit recent trade history |
+| `clodds_mexc_spot_history` | MEXC recent trade history |
+| `clodds_binance_spot_orders` | Open orders on Binance account |
+| `clodds_bybit_spot_orders` | Open orders on Bybit account |
+| `clodds_mexc_spot_orders` | Open orders on MEXC account |
+| `clodds_binance_spot_balance` | Binance wallet balances |
+| `clodds_bybit_spot_balance` | Bybit wallet balances |
+| `clodds_mexc_spot_balance` | MEXC wallet balances |
+| `clodds_hyperliquid_balance` | Hyperliquid account balance |
+| `clodds_hyperliquid_positions` | Open Hyperliquid perpetual positions |
+| `clodds_binance_futures_positions` | Open Binance futures positions |
+| `clodds_bybit_futures_positions` | Open Bybit futures positions |
+| `clodds_mexc_futures_positions` | Open MEXC futures positions |
+| `clodds_arbitrage` | Cross-exchange price discrepancy scanner |
+
+---
+
+## PREDICTION MARKETS
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_polymarket_markets` | Search Polymarket prediction markets |
+| `clodds_polymarket_orderbook` | Live orderbook — smart money probability pricing |
+| `clodds_polymarket_positions` | Your open Polymarket positions |
+| `clodds_polymarket_balance` | Polymarket account balance |
+| `clodds_kalshi_markets` | Kalshi regulated markets — macro/economic events |
+| `clodds_kalshi_orderbook` | Kalshi orderbook depth |
+| `clodds_kalshi_positions` | Your open Kalshi positions |
+| `clodds_kalshi_balance` | Kalshi account balance |
+| `clodds_predictit` | PredictIt political/economic markets |
+| `clodds_metaculus` | Metaculus community forecasts |
+
+---
+
+## SOLANA DEX EXECUTION
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_jupiter_quote` | Live Jupiter swap quote — price impact and slippage |
+| `clodds_solana_quote` | Alternative DEX quote — Raydium, Orca, PumpSwap routing |
+| `clodds_pumpfun_balance` | pump.fun token holdings in wallet |
+| `clodds_pumpfun_buy` | **[TRADE]** Buy pump.fun bonding curve token |
+| `clodds_pumpfun_sell` | **[TRADE]** Sell pump.fun token |
+| `clodds_jupiter_swap` | **[TRADE]** Execute Jupiter swap |
+| `clodds_solana_swap` | **[TRADE]** Alternative Solana swap execution |
+
+---
+
+## CEX SPOT EXECUTION
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_binance_spot_buy` | **[TRADE]** Market or limit buy on Binance spot |
+| `clodds_binance_spot_sell` | **[TRADE]** Market or limit sell on Binance spot |
+| `clodds_bybit_spot_buy` | **[TRADE]** Buy on Bybit spot |
+| `clodds_bybit_spot_sell` | **[TRADE]** Sell on Bybit spot |
+| `clodds_mexc_spot_buy` | **[TRADE]** Buy on MEXC spot |
+| `clodds_mexc_spot_sell` | **[TRADE]** Sell on MEXC spot |
+
+---
+
+## FUTURES EXECUTION
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_hyperliquid_long` | **[TRADE]** Open Hyperliquid long (market) |
+| `clodds_hyperliquid_short` | **[TRADE]** Open Hyperliquid short (market) |
+| `clodds_hyperliquid_close` | **[TRADE]** Close Hyperliquid position |
+| `clodds_hyperliquid_leverage` | Set leverage for Hyperliquid symbol |
+| `clodds_binance_futures_long` | **[TRADE]** Open Binance futures long |
+| `clodds_binance_futures_short` | **[TRADE]** Open Binance futures short |
+| `clodds_binance_futures_close` | **[TRADE]** Close Binance futures position |
+| `clodds_binance_futures_leverage` | Set leverage on Binance |
+| `clodds_bybit_futures_long` | **[TRADE]** Open Bybit long |
+| `clodds_bybit_futures_short` | **[TRADE]** Open Bybit short |
+| `clodds_bybit_futures_close` | **[TRADE]** Close Bybit position |
+| `clodds_bybit_futures_leverage` | Set leverage on Bybit |
+| `clodds_mexc_futures_long` | **[TRADE]** Open MEXC long |
+| `clodds_mexc_futures_short` | **[TRADE]** Open MEXC short |
+| `clodds_mexc_futures_close` | **[TRADE]** Close MEXC position |
+| `clodds_mexc_futures_leverage` | Set leverage on MEXC |
+
+---
+
+## STRATEGY, ALERTS & AUTOMATION
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_alerts` | Register price/event alert thresholds (Tier 2 — notify) |
+| `clodds_automation` | Configure auto-execution rules (Tier 1 — SL/TP/trailing) |
+| `clodds_triggers` | Conditional event triggers on price, volume, on-chain |
+| `clodds_monitoring` | Continuous position monitoring — check fired alert states |
+| `clodds_strategy` | Build and manage rule-based trading strategies |
+| `clodds_backtest` | Backtest strategy against historical data |
+| `clodds_dca` | DCA scheduling and execution |
+| `clodds_sizing` | Position sizing calculator |
+| `clodds_risk` | Full portfolio risk assessment |
+
+---
+
+## SOLANA DEFI PROTOCOLS
+
+| Tool | Purpose |
+|------|---------|
+| `clodds_drift` | Drift Protocol — Solana perpetuals and margin |
+| `clodds_marginfi` | MarginFi — Solana lending and borrowing |
+| `clodds_kamino` | Kamino Finance — Solana liquidity and yield |
+| `clodds_orca` | Orca DEX — concentrated liquidity pools |
+| `clodds_raydium` | Raydium AMM — Solana's primary DEX |
+| `clodds_meteora` | Meteora — dynamic liquidity pools |
+
+---
+
+## CLAUDE NATIVE TOOLS (web intelligence — no API cost)
+
+| Tool | Use For |
+|------|---------|
+| `web_search` | X/Twitter sentiment, social media, news, opinion.trade, price cross-reference, project research |
+| `web_fetch` | DexScreener, Birdeye, Solscan, pump.fun, CoinGecko, CoinMarketCap, GitHub, audit reports |
+
+**X/Twitter search formats:**
+```
+"$[TICKER]" site:x.com                    → recent X posts about a token
+"[token name]" crypto twitter 2026        → broader social discussion
+[token name] solana pump.fun              → pump.fun community chatter
+[creator handle] [token] announcement    → creator/team mentions
+"[token name]" whale buy OR sell         → whale social signals
+[token name] rug OR scam                 → negative sentiment check
+```
+
+**Key fetch targets:**
+```
+https://dexscreener.com/solana/[mint]
+https://birdeye.so/token/[mint]?chain=solana
+https://solscan.io/token/[mint]
+https://pump.fun/coin/[mint]
+https://opinion.trade
+```
+
+**DO NOT CALL:** `clodds_x_research` — use `web_search` instead.
