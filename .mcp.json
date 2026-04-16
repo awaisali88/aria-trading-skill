@@ -1,0 +1,9 @@
+{
+  "clodds": {
+    "type": "http",
+    "url": "${CLODDS_MCP_URL}",
+    "headers": {
+      "Authorization": "Bearer ${CLODDS_MCP_TOKEN}"
+    }
+  }
+}
