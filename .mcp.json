@@ -1,9 +1,13 @@
 {
   "clodds": {
-    "type": "http",
-    "url": "${CLODDS_MCP_URL}",
-    "headers": {
-      "Authorization": "Bearer ${CLODDS_MCP_TOKEN}"
-    }
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+      "-y",
+      "mcp-remote",
+      "${CLODDS_MCP_URL}/mcp",
+      "--header",
+      "Authorization: Bearer ${CLODDS_MCP_TOKEN}"
+    ]
   }
 }
