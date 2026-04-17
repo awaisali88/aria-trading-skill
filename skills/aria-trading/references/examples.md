@@ -264,6 +264,16 @@ Use ARIA. How do you compute the indicators?
 ```
 *Load `references/indicators.md` → walk through formulas for any indicator the user names.*
 
+```
+Use ARIA. Re-grade my last report against the protocol — show me the checklist and tell me what was skipped.
+```
+*Load `references/report-checklist.md` and `references/aria-protocol.md`, read the most recent report in `reports/`, walk every checklist item, mark each ✅ or ❌, and produce a phase-by-phase grade with concrete fixes for any gaps.*
+
+```
+Use ARIA. Run the compliance checklist on this report: [path or paste content].
+```
+*Same as above but for an arbitrary report — useful for grading historical analyses or comparing two reports.*
+
 ---
 
 ## Quick-reference — minimum viable prompts

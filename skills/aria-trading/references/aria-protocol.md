@@ -10,18 +10,45 @@ Run all phases in order for every analysis request. Show tool output from each p
 
 **Tools:** `clodds_token_security` → `clodds_pumpfun token <mint>` → `clodds_research "[token]"` → `web_search "[token name] solana"` → `web_fetch [solscan or pump.fun page]`
 
-Determine:
+**MUST INCLUDE for every token (skipping any item fails the report):**
 - Full name, ticker, mint address, chain, launch date
 - Bonding curve or graduated? Which DEX?
 - Creator wallet — anon or doxxed? Prior rug history?
 - Narrative: meme / AI / celebrity / political / DeFi / RWA / other
+- Mint authority status (revoked / not revoked / unknown)
+- LP lock status (locked / unlocked / lock duration)
+- Top 5 wallet concentration % (or top 10 if top 5 unavailable)
 
-**🚨 STOP if any rug flag triggers — do not continue to recommendation:**
+**Fallback chain when `clodds_token_security` errors / returns "Unknown skill":** run *every* step below, do not skip:
+```
+1. web_fetch https://rugcheck.xyz/tokens/<mint>            → rug-risk score + LP lock + mint authority
+2. web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info
+                                                           → supply, top holders %, freeze authority
+3. web_fetch https://solscan.io/token/<mint>#holders       → top 10 holder distribution
+4. clodds_pumpfun token <mint>                             → creator wallet, bonding state
+```
+If 3 of 4 fallbacks also fail AND the token is <7 days old, render this banner and cap recommended size to 1% of memecoin bag regardless of TA verdict:
+```
+⚠ INSUFFICIENT SECURITY DATA — TREAT AS PRESUMED-RISK
+   Cannot verify mint authority, LP lock, or holder distribution.
+   Position cap: 1% of memecoin bag.
+```
+
+**🚨 HARD STOP — DO NOT RECOMMEND if ANY of the following fires.** Replace the trade plan with a STOP banner; the report still runs all other phases for educational context, but Phase 8 produces no entry plan:
 - Mint authority not revoked
 - LP not locked or locked <30 days
 - Top 5 wallets hold >50% of supply
 - Creator wallet shows prior rug history
 - Honeypot detection positive
+- Insider-cluster flag from any external source (e.g. CryptoSlate / RugCheck wallet-cluster reports)
+
+STOP banner format:
+```
+🚨🚨🚨 STOP — DO NOT RECOMMEND $[TICKER] 🚨🚨🚨
+Trigger: [which flag(s) fired]
+Source:  [tool / URL]
+Phase 8 trade plan SUPPRESSED. Educational analysis continues below.
+```
 
 ---
 
@@ -29,23 +56,24 @@ Determine:
 
 **Tools:** `clodds_pumpfun stats <mint>` → `clodds_pumpfun bonding <mint>` → `clodds_pumpfun trades <mint>` → `clodds_binance_spot_price` (if CEX-listed) → `clodds_jupiter_quote` (slippage) → `web_fetch dexscreener.com/solana/<mint>`
 
-Pull and report every field:
-- Price: current · 5m · 1h · 6h · 24h change
-- Market cap and FDV
-- 24h volume and 1h volume — accelerating or decelerating?
-- Volume-to-market-cap ratio — flag >100% suspicious, >50% high activity
-- Liquidity pool total USD depth
-- Buy/sell transaction ratio (24h and 1h)
-- Bonding curve: % filled · SOL in curve · SOL needed to graduate
-- Graduation status: bonding / PumpSwap / Raydium / other DEX
+**MUST INCLUDE for every token (every item — skipping any one fails the report):**
+- **Price changes — all five intervals:** 5m / 1h / 6h / 24h / 7d. If `clodds_pumpfun stats` is missing any interval, fall back to `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info` (returns `price_change_percentage` for `m5`, `h1`, `h6`, `h24`).
+- **Volume:** 1h and 24h, with vol/mcap ratio. Flag >100% as suspicious, >50% as high activity.
+- **Buy/sell tx split (last 1h):** count buys vs sells. Pull from `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/trades?limit=100` and count by `kind` field. Report as `Buys: N (X%) · Sells: N (X%)`.
+- **Liquidity** (USD), **MCap**, **FDV**, and circulating-supply ratio.
+- **Bonding curve %** filled / SOL in curve / SOL to graduate (if pre-graduation).
+- **Graduation status:** bonding / PumpSwap / Raydium / Orca / Meteora / other DEX.
 
-**Slippage table (always include):**
+**Slippage table — MANDATORY for every memecoin with liquidity <$10M.** Render every row:
 ```
-Entry $500   → ~X.X%  |  Exit $500   → ~X.X%
-Entry $2,000 → ~X.X%  |  Exit $2,000 → ~X.X%
-Entry $5,000 → ~X.X%  |  Exit $5,000 → ~X.X%
+Slippage (impact ≈ tradeSize / (liquidityDepth × 2) × 100):
+  Entry $50    → ~X.X%   |  Exit $50    → ~X.X%
+  Entry $100   → ~X.X%   |  Exit $100   → ~X.X%
+  Entry $500   → ~X.X%   |  Exit $500   → ~X.X%
+  Entry $1,000 → ~X.X%   |  Exit $1,000 → ~X.X%
+  Entry $5,000 → ~X.X%   |  Exit $5,000 → ~X.X%
 ```
-*(impact ≈ tradeSize / (liquidityDepth × 2) × 100)*
+For CEX-listed tokens (deep books), a single line "negligible at <$10K notional" is acceptable instead.
 
 ---
 
@@ -54,6 +82,13 @@ Entry $5,000 → ~X.X%  |  Exit $5,000 → ~X.X%
 **This is the default Phase 3 behavior for every market/token analysis** — not just day trading. Every time ARIA is asked to analyze a market, scan for opportunities, or evaluate a token, it must run the full multi-timeframe chart analysis with the complete indicator suite on **1m · 5m · 15m · 1h · 4h**. Only extend to swing/position timeframes (1d / 3d / 1w) when the user explicitly says "swing", "long-term", "HODL", or specifies a holding window > 3 days — and even then, the 5 intraday timeframes still run.
 
 **Always load `references/indicators.md` at the start of Phase 3.** That file contains the exact computation formula, interpretation rules, and chart-link format for every indicator below. Do not skip it — precise calculation matters, and the model should show the math path, not guess.
+
+**🚫 No "derived" timeframes.** Every one of the 5 timeframes must be COMPUTED from raw OHLCV pulled from the data source (Binance klines / pump.fun / GeckoTerminal). Phrases like "5m derived from 15m structure" or "1m: heavy noise, likely RSI 30↔70" are NOT acceptable — they are a Phase 3 failure. If GeckoTerminal returns fewer than 30 candles for a timeframe, render the per-TF block with header `INSUFFICIENT DATA — n bars only` and skip the indicator values for that TF (do not fabricate). Always pull explicitly:
+```
+1m:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=1&limit=200
+5m:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=5&limit=200
+```
+For CEX assets, use the corresponding Binance klines URLs at `interval=1m` and `interval=5m` already documented in `indicators.md`.
 
 ### Data sources per asset class
 
@@ -226,13 +261,28 @@ If any of the six fails, mark the setup "WAITING" and tell the user what needs t
 
 **Tools:** `clodds_whale_tracking` → `clodds_metrics` → `clodds_divergence` → `clodds_analytics` → `web_fetch birdeye.so/token/<mint>?chain=solana`
 
-Report:
-- Whale direction: net accumulating (bullish) or net distributing (bearish)?
-- Top 10 wallet concentration — flag if >40%
-- Creator wallet holdings — has creator sold? What % remain?
-- On-chain health — growing or shrinking active wallets?
-- Price-vs-onchain divergence: price down but accumulating = hidden bullish signal
-- LP lock status details
+**MUST INCLUDE for every token (every item — use fallback chain when Clodds tools fail / return empty):**
+- **Top 10 holder concentration % + flag if >40%.** Fallbacks:
+  ```
+  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/info     → top holders
+  web_fetch https://solscan.io/token/<mint>#holders                                    → top 10 list
+  web_fetch https://birdeye.so/token/<mint>?chain=solana                               → holder distribution
+  ```
+- **Creator wallet status — has creator sold? What % remains?** Fallback:
+  ```
+  web_fetch https://solscan.io/account/<creator_wallet>                                → wallet holdings + tx history
+  ```
+  Report as `Creator holds X% of supply, last sell N days ago` or `Creator fully exited`.
+- **Whale direction (last 24h): net accumulation vs distribution.** Fallback:
+  ```
+  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/trades?limit=100
+  ```
+  Filter trades by USD size > $5K; sum buy USD vs sell USD; report `Net whale flow: +$XXk (accumulation)` or `-$XXk (distribution)`.
+- **LP lock status:** locked / unlocked / X days remaining (cross-reference Phase 1 fallback chain output).
+- **Price-vs-OBV divergence:** computed from Phase 3 OBV data — if price made a higher high while OBV made a lower high (bearish div) or vice versa (bullish div), report it explicitly.
+- **On-chain health:** active wallets trend over last 24h (growing / shrinking / flat) — pull from GeckoTerminal pool info or Birdeye.
+
+If three or more of the above cannot be filled even after the fallback chain, render `⚠ ON-CHAIN DATA PARTIAL — [list missing items]` at the top of the Phase 4 block.
 
 ---
 
@@ -240,21 +290,29 @@ Report:
 
 **Tools:** `web_search "$[TICKER] crypto"` → `web_search "[token name] twitter pump.fun"` → `web_search "[token name] telegram"` → `web_fetch [project X page]` → `web_fetch opinion.trade` → `clodds_news [token]` → `clodds_feeds` → `clodds_opinion "[token] — buy or sell?"` → `clodds_edge "[token] — any asymmetric opportunity?"`
 
-Report:
-- X/Twitter: post volume 24h · sentiment · KOL mentions
-- Community: active or ghost town?
-- Opinion.trade: market sentiment pricing?
-- Upcoming catalysts: listings · partnerships · unlocks · events
-- Media coverage: any mainstream press?
-- Shill risk: coordinated hype signals?
+**MUST RENDER the standardized sentiment block — never skip, never collapse, never replace with prose.** This block is mandatory for every token analyzed:
 
 ```
 X/Twitter sentiment:  🟢 Bullish / 🟡 Neutral / 🔴 Bearish
+X post count (24h):   ~XX posts (estimate from web_search results)
 Community activity:   Active / Moderate / Dead
-KOL mentions:         Yes ([name]) / None
-Catalyst pipeline:    Yes ([describe]) / None
+KOL mentions:         Yes ([@handle, ~XXk followers]) / None
+Catalyst pipeline:    Yes ([describe, ETA]) / None
 Shill/manipulation:   Low / Medium / High
+Mainstream coverage:  Yes ([outlet, headline, date]) / None
 ```
+
+**How to fill the block:**
+- **X post count:** run `web_search "$<TICKER> site:x.com"` and `web_search "[token name] site:x.com"`. Count distinct results from the last 24h. If under 10, mark as `LOW (~N posts)`; if 10–50 mark `MODERATE`; if >50 mark `ACTIVE`. State the count.
+- **KOL mentions:** scan the search results for accounts with >100K followers, blue checks, or known crypto-KOL handles. List by handle with follower count if visible. Report `None` only if you actually checked.
+- **Sentiment color:** 🟢 if bullish posts > 60% of fresh chatter, 🔴 if bearish > 60%, 🟡 otherwise.
+- **Catalyst pipeline:** listings / partnerships / unlocks / token-2.0 / events with stated ETA. If none surfaces in news + X search, mark `None`.
+
+Then the long-form context (after the block):
+- Community color (Telegram/Discord activity if checked)
+- Recent narrative drivers (~3 bullets)
+- Risk flags surfaced by search (e.g. CryptoSlate insider reports, Messari manipulation flags)
+- Sources list (clickable URLs)
 
 ---
 
@@ -262,20 +320,44 @@ Shill/manipulation:   Low / Medium / High
 
 **Tools:** `clodds_market_index` → `clodds_polymarket_markets "crypto"` → `clodds_polymarket_orderbook` → `clodds_binance_spot_price BTCUSDT` → `clodds_binance_spot_price SOLUSDT` → `web_search "crypto market today"` → `web_fetch opinion.trade`
 
-Report:
-- Fear/greed index and what it signals
-- BTC 24h and 7d trend
-- SOL 24h and 7d trend (critical for Solana tokens)
-- Altcoin cycle position
-- Memecoin sector temperature: hot / cooling / cold
-- Polymarket/Kalshi macro events (rate decisions, regulatory, ETF flows)
-- Does macro support or oppose this trade?
+**MUST RENDER the macro block once per report (top of the document, after the executive summary).** Every item is required — pull from the explicit URL/tool listed:
+
+```
+Macro snapshot — [DATE] [TIME UTC]
+  Fear & Greed:        XX (Extreme Fear / Fear / Neutral / Greed / Extreme Greed)
+                       ↳ web_fetch https://api.alternative.me/fng/?limit=1
+  BTC:                 $XX,XXX  · 24h: ±X.X%  · 7d: ±X.X%
+                       ↳ clodds_binance_spot_price BTCUSDT + klines interval=1d limit=8
+  SOL:                 $XXX     · 24h: ±X.X%  · 7d: ±X.X%
+                       ↳ same with SOLUSDT (CRITICAL for Solana memecoin trades)
+  ETH:                 $X,XXX   · 24h: ±X.X%  · 7d: ±X.X%
+  BTC dominance:       XX.X%
+  Polymarket events:   [top 1-2 active crypto markets + odds]
+                       ↳ clodds_polymarket_markets "crypto"
+  Kalshi macro:        [rate decisions / CPI / SEC / ETF events with date]
+                       ↳ clodds_kalshi_markets
+  Memecoin sector:     🔥 HOT / 🌤 WARM / 🌧 COOLING / 🥶 COLD  — [one-line reason]
+  ETF flows:           [BTC/ETH ETF net flow last session, $M]
+  Macro verdict:       SUPPORTS / NEUTRAL / OPPOSES the trade direction
+```
+
+**Memecoin sector classification:**
+- 🔥 HOT — pump.fun graduating count >5/day, BTC + SOL both up 7d, fear/greed >55
+- 🌤 WARM — graduating count 2-5/day OR BTC/SOL flat-to-up
+- 🌧 COOLING — graduating count <2/day OR BTC/SOL down 24h
+- 🥶 COLD — graduating count <1/day AND BTC/SOL down 7d AND fear/greed <30
+
+The macro verdict line is what informs Phase 7 factor #10 (Macro alignment).
 
 ---
 
 ## PHASE 7: ARIA SCORE & PROBABILITY
 
-Using data from all phases + `clodds_opinion "[token] — buy or sell?"`:
+**MANDATORY for EVERY token analysis.** Composite score alone is NOT acceptable. The full 10-factor table must be rendered for each token, with the **Signal column populated** (one short phrase per factor explaining the score). On multi-token reports, render the scorecard table once per token — never collapse to composites only.
+
+**If a factor cannot be scored due to missing data**, score it 5/10 (neutral) and footnote the reason with `†`. Never omit the table or substitute a single composite number.
+
+Using data from all prior phases + `clodds_opinion "[token] — buy or sell?"`:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -283,16 +365,16 @@ Using data from all phases + `clodds_opinion "[token] — buy or sell?"`:
 ├─────────────────────────────┬───────┬───────────────────┤
 │ Factor                      │ Score │ Signal            │
 ├─────────────────────────────┼───────┼───────────────────┤
-│ 1.  Trend direction         │  X/10 │                   │
-│ 2.  RSI momentum            │  X/10 │                   │
-│ 3.  MACD signal             │  X/10 │                   │
-│ 4.  Volume momentum         │  X/10 │                   │
-│ 5.  On-chain health         │  X/10 │                   │
-│ 6.  Whale activity          │  X/10 │                   │
-│ 7.  Social sentiment        │  X/10 │                   │
-│ 8.  Liquidity & safety      │  X/10 │                   │
-│ 9.  Narrative strength      │  X/10 │                   │
-│ 10. Macro alignment         │  X/10 │                   │
+│ 1.  Trend direction         │  X/10 │ [bull/bear/range] │
+│ 2.  RSI momentum            │  X/10 │ [overbought/...]  │
+│ 3.  MACD signal             │  X/10 │ [cross + dir]     │
+│ 4.  Volume momentum         │  X/10 │ [spike/fade]      │
+│ 5.  On-chain health         │  X/10 │ [holders/wallets] │
+│ 6.  Whale activity          │  X/10 │ [accum/distrib]   │
+│ 7.  Social sentiment        │  X/10 │ [🟢/🟡/🔴 + KOL]  │
+│ 8.  Liquidity & safety      │  X/10 │ [$XM liq, slip]   │
+│ 9.  Narrative strength      │  X/10 │ [theme + age]     │
+│ 10. Macro alignment         │  X/10 │ [supp/neut/opp]   │
 ├─────────────────────────────┼───────┼───────────────────┤
 │ COMPOSITE SCORE             │ XX/100│                   │
 └─────────────────────────────┴───────┴───────────────────┘
@@ -302,7 +384,27 @@ Using data from all phases + `clodds_opinion "[token] — buy or sell?"`:
 ➡️ Probability SIDEWAYS:    XX%
 ```
 
-Score: 80–100 Strong Buy · 65–79 Buy · 50–64 Speculative · 35–49 Avoid · 20–34 Sell · 0–19 Exit
+**Scoring guide (use consistent thresholds across all tokens):**
+| Composite | Action |
+|---|---|
+| 80–100 | Strong Buy |
+| 65–79 | Buy |
+| 50–64 | Speculative |
+| 35–49 | Avoid |
+| 20–34 | Sell |
+| 0–19 | Exit |
+
+**Per-factor scoring anchors (so scores stay consistent token-to-token):**
+- **Trend (1):** 10 = clean HH-HL on all 5 TFs · 5 = mixed · 0 = LH-LL on all 5 TFs
+- **RSI (2):** 10 = 50–65 with bull divergence · 5 = neutral · 0 = >85 or <15 extreme
+- **MACD (3):** 10 = fresh bull cross both 1h+4h · 5 = neutral · 0 = bear cross 4h
+- **Volume (4):** 10 = ≥2× avg sustained 4h+ · 5 = normal · 0 = <0.5× fading
+- **On-chain (5):** 10 = top10 <20% + growing wallets · 5 = neutral · 0 = top10 >50% or shrinking
+- **Whale (6):** 10 = net accum >$50K/24h · 5 = mixed · 0 = net distrib >$50K/24h
+- **Social (7):** 10 = 🟢 + named KOL + active community · 5 = 🟡 · 0 = 🔴 or dead community
+- **Liquidity (8):** 10 = >$10M liq + <0.5% slip @ $1K · 5 = $1–10M · 0 = <$500K
+- **Narrative (9):** 10 = fresh narrative + organic growth · 5 = mature meme · 0 = exhausted/no narrative
+- **Macro (10):** 10 = SUPPORTS · 5 = NEUTRAL · 0 = OPPOSES (from Phase 6 verdict line)
 
 ---
 
@@ -310,13 +412,38 @@ Score: 80–100 Strong Buy · 65–79 Buy · 50–64 Speculative · 35–49 Avoi
 
 See `references/trade-execution.md` for full format.
 
-**Balance check tools by venue:**
-- Solana: `clodds_solana_balance` + `clodds_pumpfun_balance`
+**MUST CALL a real balance tool BEFORE any allocation recommendation.** Hypothetical phrasings ("on a 10-SOL bag", "if you had $X", "assume a $200 portfolio") are NOT acceptable and constitute a Phase 8 failure.
+
+**Balance check tools by venue (call the right one for the trade venue):**
+- Solana memecoins / pump.fun: `clodds_solana_balance` + `clodds_pumpfun_balance`
 - Binance: `clodds_binance_spot_balance`
 - Bybit: `clodds_bybit_spot_balance`
 - MEXC: `clodds_mexc_spot_balance`
 - Hyperliquid: `clodds_hyperliquid_balance`
-- All venues: `clodds_portfolio_summary` + `clodds_bags` + `clodds_risk`
+- Multi-venue / "what's my portfolio": `clodds_portfolio_summary` + `clodds_bags` + `clodds_risk`
+
+**Render the balance result at the top of Phase 8:**
+```
+Balance check — [VENUE] · [DATE] [TIME UTC]
+  Available:        X.XX SOL / $X,XXX USDT
+  Open positions:   N (showing $X,XXX in $TICKER, $X,XXX in $TICKER...)
+  Free for new:     X.XX SOL / $X,XXX
+  Source:           clodds_<venue>_balance (live)
+```
+
+**If the balance tool errors or returns 0**, render this banner instead and continue with sizing as a percentage:
+```
+⚠ BALANCE UNKNOWN — clodds_<tool> returned [error/0].
+  Sizing below shown as % of available capital.
+  Replace with real numbers before executing.
+```
+
+**Position sizing rules (memecoin specific):**
+- Per-token cap: 15% of memecoin bag for top-quality (score ≥75), 10% for mid (60–74), 5% for speculative (50–59), 1% if presumed-risk banner from Phase 1.
+- Aggregate memecoin allocation cap: 40% of total portfolio.
+- Reserve: always keep ≥30% USDT/SOL dry powder.
+
+Then build the trade plan per `references/trade-execution.md` with all of: Entry zone, SL, TP1/TP2/TP3, trailing stop activation, R:R, % portfolio at risk if SL hits.
 
 ---
 
@@ -328,3 +455,15 @@ Immediately after every trade:
 - Wire Tier 1: SL auto-close + TP1 auto-sell + trailing stop via `clodds_automation`
 - Wire Tier 2: TP2/volume/whale alerts via `clodds_alerts`
 - Activate: `clodds_monitoring` for continuous position health
+
+**Every alert command in the report MUST be labeled with its tier.** Use this exact format so the user can see at a glance what auto-executes vs what requires their attention:
+
+```
+[Tier 1 — auto-execute]  clodds_automation add <token> stop_loss=X tp_ladder=A:30,B:40 trailing=X%
+[Tier 1 — auto-execute]  clodds_automation add <token> tp1_sell pct=30 price=X
+[Tier 2 — notify only]   clodds_alerts     add <token> price>X notify=tg
+[Tier 2 — notify only]   clodds_alerts     add <token> volume_spike 2x notify=sound+tg
+[Tier 2 — notify only]   clodds_alerts     add <token> whale_sell threshold=$50k notify=tg
+```
+
+For analyses where no trade is executed (recommendation only), still render the proposed alert lines using the same `[Tier X]` labels — that way the user can see exactly what would be wired on a "go".
