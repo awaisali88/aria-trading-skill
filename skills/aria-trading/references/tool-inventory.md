@@ -226,4 +226,41 @@ https://pump.fun/coin/[mint]
 https://opinion.trade
 ```
 
-**DO NOT CALL:** `clodds_x_research` — use `web_search` instead.
+**Multi-timeframe OHLCV — primary data sources (all free, no auth):**
+
+1. **CEX-listed tokens (Binance public klines):**
+```
+https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=1m&limit=200
+https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=5m&limit=200
+https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=15m&limit=200
+https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=1h&limit=200
+https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=4h&limit=200
+```
+Response per candle: `[openTime, open, high, low, close, volume, closeTime, quoteVolume, trades, takerBuyBase, takerBuyQuote, _]`.
+
+2. **pump.fun bonding-curve / freshly graduated tokens:**
+```
+clodds_pumpfun chart <mint> --interval <1m|5m|15m|1h|4h>
+```
+
+3. **Any other Solana DEX token (Raydium / Orca / Meteora / Jupiter / fully graduated / never-on-pump.fun)** — GeckoTerminal OHLCV API:
+```
+# Find top pool:
+https://api.geckoterminal.com/api/v2/networks/solana/tokens/[mint]/pools
+
+# Pull OHLCV per timeframe:
+1m:  https://api.geckoterminal.com/api/v2/networks/solana/pools/[pool]/ohlcv/minute?aggregate=1&limit=200
+5m:  https://api.geckoterminal.com/api/v2/networks/solana/pools/[pool]/ohlcv/minute?aggregate=5&limit=200
+15m: https://api.geckoterminal.com/api/v2/networks/solana/pools/[pool]/ohlcv/minute?aggregate=15&limit=200
+1h:  https://api.geckoterminal.com/api/v2/networks/solana/pools/[pool]/ohlcv/hour?aggregate=1&limit=200
+4h:  https://api.geckoterminal.com/api/v2/networks/solana/pools/[pool]/ohlcv/hour?aggregate=4&limit=200
+```
+Response: `data.attributes.ohlcv_list[]` where each entry is `[timestamp, open, high, low, close, volume]` — direct-feed into every indicator formula in `indicators.md`.
+
+GeckoTerminal also supports `ethereum`, `base`, `bsc`, `arbitrum`, `polygon_pos`, and others — swap the network slug in the URL to cover non-Solana DEX tokens when needed.
+
+All three sources feed the same indicator pipeline in `references/indicators.md`.
+
+`clodds_x_research` is denied at the permission layer on this setup — use `web_search` for X/Twitter instead.
+
+**Fallback for other unconfigured Clodds tools:** if `clodds_news`, `clodds_signals`, `clodds_whale_tracking`, `clodds_edge`, `clodds_analytics`, or `clodds_feeds` return empty/unconfigured responses, use `web_search` + `web_fetch` (CoinDesk, CoinGecko, The Block, DexScreener, Birdeye, Solscan) to fill the gap. Never halt analysis on a single missing source.

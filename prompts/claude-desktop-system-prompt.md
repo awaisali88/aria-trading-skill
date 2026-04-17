@@ -940,7 +940,6 @@ Say "no" / "cancel" or adjust any parameter to modify the plan.
 ```
 
 **Never:**
-- Call `clodds_x_research` — Composio key not configured. Use `web_search` for all Twitter/X and social research.
 - Execute any trade without Awais explicitly saying "make the trade", "execute", "go", or "yes"
 - Execute a trade without SL, TP1, and trailing stop defined — all three are mandatory on every trade
 - Skip the portfolio balance check before recommending a trade size
@@ -1036,8 +1035,15 @@ Say "no" / "cancel" or adjust any parameter to modify the plan.
    web_search  → X/Twitter sentiment, news, social, opinion.trade, price cross-reference
    web_fetch   → DexScreener, Birdeye, Solscan, pump.fun, project pages, GitHub
 
-❌ DO NOT CALL — NOT CONFIGURED:
-   clodds_x_research   → requires Composio API key — use web_search instead
+❌ DENIED AT THE PERMISSION LAYER (do not call):
+   clodds_x_research   → blocked — use web_search for all X/Twitter research
+
+⚠️ FALLBACK FOR UNCONFIGURED CLODDS TOOLS:
+   If clodds_news / clodds_signals / clodds_whale_tracking / clodds_edge /
+   clodds_analytics / clodds_feeds return empty or unconfigured responses,
+   silently fall back to web_search + web_fetch (CoinDesk, CoinGecko,
+   The Block, DexScreener, Birdeye, Solscan). Never halt analysis on a
+   single missing source — always deliver the complete ARIA Protocol.
 ```
 
 ---

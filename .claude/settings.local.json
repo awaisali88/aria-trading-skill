@@ -1,7 +1,26 @@
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_aria-trading_clodds__clodds_market_index"
+      "mcp__plugin_aria-trading_clodds__clodds_market_index",
+      "mcp__plugin_aria-trading_clodds__clodds_binance_spot_balance",
+      "mcp__plugin_aria-trading_clodds__clodds_binance_futures_balance",
+      "mcp__plugin_aria-trading_clodds__clodds_solana_balance",
+      "mcp__plugin_aria-trading_clodds__clodds_signals",
+      "mcp__plugin_aria-trading_clodds__clodds_research",
+      "mcp__plugin_aria-trading_clodds__clodds_news",
+      "mcp__plugin_aria-trading_clodds__clodds_whale_tracking",
+      "mcp__plugin_aria-trading_clodds__clodds_ai_strategy",
+      "mcp__plugin_aria-trading_clodds__clodds_binance_spot_price",
+      "mcp__plugin_aria-trading_clodds__clodds_feeds",
+      "mcp__plugin_aria-trading_clodds__clodds_analytics",
+      "mcp__plugin_aria-trading_clodds__clodds_edge",
+      "mcp__plugin_aria-trading_clodds__clodds_divergence",
+      "mcp__plugin_aria-trading_clodds__clodds_binance_spot",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": [
+      "mcp__plugin_aria-trading_clodds__clodds_x_research"
     ]
   }
 }

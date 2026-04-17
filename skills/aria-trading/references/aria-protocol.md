@@ -2,6 +2,8 @@
 
 Run all phases in order for every analysis request. Show tool output from each phase before conclusions. Do not skip phases.
 
+> 🔁 **Fallback rule (applies to every phase below):** If a Clodds tool returns empty, unconfigured, or off-topic output (e.g. `clodds_news` returning only political feeds, `clodds_signals` with no sources, `clodds_whale_tracking` with 0 wallets, `clodds_edge` returning prediction-market edges only, `clodds_analytics` with 0 opportunities, `clodds_feeds` empty), **silently fall back** to `web_search` + `web_fetch` on CoinDesk / CoinGecko / The Block / DexScreener / Birdeye / Solscan / X.com and keep the pipeline moving. Never halt or shrink the final report because one source was unconfigured — cross-reference, synthesize, and deliver the full 9-phase analysis every time. `clodds_x_research` is denied at the permission layer; always use `web_search` for X/Twitter.
+
 ---
 
 ## PHASE 1: IDENTITY & SECURITY CHECK
@@ -47,45 +49,176 @@ Entry $5,000 → ~X.X%  |  Exit $5,000 → ~X.X%
 
 ---
 
-## PHASE 3: TECHNICAL ANALYSIS
+## PHASE 3: TECHNICAL ANALYSIS — MULTI-TIMEFRAME CHART + INDICATORS
 
-**Tools:** `clodds_pumpfun chart <mint> --interval 1h` → `clodds_pumpfun chart <mint> --interval 15m` → `clodds_ticks` → `web_fetch dexscreener chart page`
+**This is the default Phase 3 behavior for every market/token analysis** — not just day trading. Every time ARIA is asked to analyze a market, scan for opportunities, or evaluate a token, it must run the full multi-timeframe chart analysis with the complete indicator suite on **1m · 5m · 15m · 1h · 4h**. Only extend to swing/position timeframes (1d / 3d / 1w) when the user explicitly says "swing", "long-term", "HODL", or specifies a holding window > 3 days — and even then, the 5 intraday timeframes still run.
 
-**Trend identification:**
-- Higher highs + higher lows → Uptrend
-- Lower highs + lower lows → Downtrend
-- Oscillating between levels → Range/Consolidation
+**Always load `references/indicators.md` at the start of Phase 3.** That file contains the exact computation formula, interpretation rules, and chart-link format for every indicator below. Do not skip it — precise calculation matters, and the model should show the math path, not guess.
 
-**Chart patterns to identify:**
-Double top/bottom · Head and shoulders · Inverse H&S · Bull/Bear flag
-Ascending/Descending triangle · Rising/Falling wedge · Cup and handle · Pennant
+### Data sources per asset class
 
-**Support & resistance map (always all 6 levels):**
+**CEX-listed tokens (Binance / Bybit / MEXC — e.g. SOL, XRP, TAO, BTC, ETH):**
+Primary source is Binance's public klines endpoint (no auth required). Fetch each interval with `web_fetch`:
 ```
-R3  $X.XX  (+XX%)  ← ATH / extreme resistance
-R2  $X.XX  (+XX%)  ← Major resistance / prior swing high
-R1  $X.XX  (+XX%)  ← Near-term resistance
-    ─── CURRENT $X.XX ───
-S1  $X.XX  (-XX%)  ← Near-term support
-S2  $X.XX  (-XX%)  ← Critical support / last defense
-S3  $X.XX  (-XX%)  ← Death zone
+https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=1m&limit=200
+https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=5m&limit=200
+https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=15m&limit=200
+https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=1h&limit=200
+https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=4h&limit=200
+```
+Each response is an array of `[openTime, open, high, low, close, volume, closeTime, quoteVolume, trades, takerBuyBase, takerBuyQuote, ignore]`. Calculate RSI, MACD, EMA, BB, VWAP, ATR from these arrays directly.
+
+Supplement with `clodds_binance_spot_history <SYMBOL>USDT` for the most recent live trade tape (bid/ask imbalance).
+
+**Solana tokens — decision tree (covers every Solana pair, not just pump.fun):**
+
+1. **Token currently on pump.fun bonding curve or freshly graduated PumpSwap** → primary source:
+   ```
+   clodds_pumpfun chart <mint> --interval 1m
+   clodds_pumpfun chart <mint> --interval 5m
+   clodds_pumpfun chart <mint> --interval 15m
+   clodds_pumpfun chart <mint> --interval 1h
+   clodds_pumpfun chart <mint> --interval 4h
+   ```
+
+2. **Any other Solana token (Raydium / Orca / Meteora / Jupiter-only / fully graduated / never-on-pump.fun)** → GeckoTerminal OHLCV API (free, no auth):
+   ```
+   # Find the top pool for the mint:
+   web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/pools
+
+   # Then pull OHLCV on all 5 intraday timeframes using the top pool address:
+   1m:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=1&limit=200
+   5m:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=5&limit=200
+   15m: web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=15&limit=200
+   1h:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/hour?aggregate=1&limit=200
+   4h:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/hour?aggregate=4&limit=200
+   ```
+   Response: `data.attributes.ohlcv_list[]` where each entry is `[timestamp, open, high, low, close, volume]`. Feed directly into every indicator formula in `indicators.md` — no conversion needed.
+
+3. **Try #1 first; on empty/error, fall back to #2.** If a token has *both* a pump.fun pool and a later Raydium/Meteora pool after graduation, `clodds_pumpfun chart` will only reflect the pump.fun pool's activity — prefer GeckoTerminal's top pool (highest liquidity) for post-graduation tokens.
+
+4. **Visual confirmation (always include as a chart link, regardless of data source):**
+   - `https://birdeye.so/token/<mint>?chain=solana` — embedded TradingView chart with default indicators, works for any Solana token
+   - `https://dexscreener.com/solana/<mint>` — price + volume, all pools aggregated
+   - `https://solscan.io/token/<mint>` — on-chain activity
+   - `https://pump.fun/coin/<mint>` — only for pump.fun-origin tokens
+
+**Last-resort fallback if GeckoTerminal also fails:** `web_fetch https://api.coingecko.com/api/v3/coins/<coin-id>/ohlc?vs_currency=usd&days=1` (≤1d returns 30m candles) and `...&days=7` (7d returns 4h candles). CoinGecko has no 1m/5m granularity, so day-trading precision degrades — flag this to the user if it happens.
+
+### Per-timeframe block (run this full block for each of 1m, 5m, 15m, 1h, 4h)
+
+For every timeframe, compute all indicators using the formulas in `references/indicators.md`, then emit:
+
+```
+═══ [TIMEFRAME] — $[TICKER] ════════════════════════════════════════
+Trend:           UP / DOWN / RANGE  (HH-HL / LH-LL / oscillation)
+Candle pattern:  [bull engulf / bear engulf / doji / hammer / shooting star / inside bar / none]
+Chart structure: [flag / triangle / wedge / double top/bottom / H&S / inv H&S / channel]
+
+Support & Resistance (algorithmic — see indicators.md S/R section):
+  R3  $X.XX  (+X.XX%)  ← [why: prior swing high / ATH / liquidity pool]
+  R2  $X.XX  (+X.XX%)
+  R1  $X.XX  (+X.XX%)
+      ─── CURRENT $X.XX ───
+  S1  $X.XX  (-X.XX%)
+  S2  $X.XX  (-X.XX%)
+  S3  $X.XX  (-X.XX%)  ← [invalidation level]
+
+Indicators (every one — no skipping; formulas in indicators.md):
+  RSI(14):         XX.X  [OB >70 / neutral / OS <30]   divergence: [none/bull/bear]
+  MACD(12,26,9):   line $X.XX  signal $X.XX  hist $X.XX  cross: [bull X now / bear X now / none]
+  BB(20,2):        upper $X.XX  mid $X.XX  lower $X.XX  width X.X%  state: [squeeze/expand/riding upper/lower]
+  VWAP (session):  $X.XX  — price [above / below] VWAP by X.X%
+  EMA(9/21/50):    $X.XX / $X.XX / $X.XX  stack: [bull / bear / mixed]  price: [above all / below all / mixed]
+  ATR(14):         $X.XX  (X.X% of price) — SL breathing room reference
+  Stoch RSI:       K XX · D XX  zone: [OB/OS/mid]  cross: [bull / bear / none]  divergence: [none/bull/bear]
+  OBV:             rising X% / flat / falling X% over last 20 candles — [accumulation / distribution]
+  Volume:          last candle Xm vs 20-candle avg Xm = X.Xx ratio  → [spike / elevated / normal / fade]
+
+Key observation: [one-line read specific to this timeframe]
 ```
 
-**Indicators (calculate from returned price data):**
-- **RSI (14):** >70 overbought / 30–70 neutral / <30 oversold · note divergences
-- **MACD:** fast vs slow EMA position · histogram direction · crossover signal
-- **Bollinger Bands:** above/below mid-band · band width (expanding/contracting)
-- **VWAP:** above = bullish bias / below = bearish bias
-- **OBV:** rising = accumulation / falling = distribution
-- **EMA alignment:** 20 vs 50 — golden cross (bullish) or death cross (bearish)
-- **Stochastic RSI:** >80 overbought / <20 oversold · divergence = reversal signal
+### Multi-Timeframe Confluence Matrix (always produce)
 
-**Momentum check:**
-- Volume spike, no price follow-through → distribution (bearish)
-- Price move on declining volume → weak momentum, likely to fade
-- 1h direction vs 24h direction — aligned or diverging?
-- Failed bounces in recent candles? → bearish confirmation
-- Failed breakdowns? → bullish confirmation
+After the five per-timeframe blocks, emit the confluence matrix:
+
+```
+┌─────────┬─────────┬──────────┬──────────┬──────────┬──────────────┐
+│ TF      │ Trend   │ RSI      │ MACD     │ Vol      │ Signal       │
+├─────────┼─────────┼──────────┼──────────┼──────────┼──────────────┤
+│ 4h      │ UP/DN/R │ XX       │ BUL/BER  │ ↑/↓/→   │ 🟢/🟡/🔴      │
+│ 1h      │ ...     │ ...      │ ...      │ ...      │ ...          │
+│ 15m     │ ...     │ ...      │ ...      │ ...      │ ...          │
+│ 5m      │ ...     │ ...      │ ...      │ ...      │ ...          │
+│ 1m      │ ...     │ ...      │ ...      │ ...      │ ...          │
+└─────────┴─────────┴──────────┴──────────┴──────────┴──────────────┘
+
+Confluence score: X/5 bullish · X/5 bearish · X/5 mixed
+Higher-TF bias (4h+1h): [BULLISH / BEARISH / NEUTRAL]
+Entry-TF trigger (15m+5m): [ARMED / WAITING / INVALID]
+Micro-TF timing (1m):      [HOT / COOLING]
+```
+
+### Day-trading role of each timeframe
+
+Use this framework to translate the matrix into a trade decision:
+
+| TF | Role | What it controls |
+|----|------|---------------|
+| **4h** | Macro bias | Are we swimming with or against the tide? If 4h is DOWN, only counter-trend scalps — no trend longs |
+| **1h** | Structure | Where are the swing S/R levels? This anchors the trade plan's SL and TP2/TP3 |
+| **15m** | Setup | Is the pattern forming (flag, pullback, breakout retest)? Entry zone comes from here |
+| **5m** | Trigger | The actual entry candle — wait for bull/bear engulf, breakout close, or rejection wick at S/R |
+| **1m** | Timing | Fine-tune fill — avoid wicks, chase less, use for scaling in/out |
+
+### Day-trading entry rules (must all be true to enter long; invert for short)
+
+1. **Higher-TF bias aligned:** 4h and 1h both trending in trade direction (or at least 1h trending + 4h range-neutral).
+2. **Setup confirmed:** 15m shows a recognizable continuation or reversal pattern at a meaningful S/R level.
+3. **Trigger fired:** 5m closed in trade direction through the setup level (not a wick — a close).
+4. **Momentum healthy:** 15m RSI between 40–70 (longs) or 30–60 (shorts) — not already extended.
+5. **Volume confirms:** 5m or 15m volume on the trigger candle ≥ 1.3× the 20-candle average.
+6. **No immediate resistance:** next higher-TF resistance ≥ 1.5× the stop-loss distance (minimum 1:1.5 R:R before TP1).
+
+If any of the six fails, mark the setup "WAITING" and tell the user what needs to happen to arm it.
+
+### Stop-loss placement (day-trading)
+
+- **Primary SL:** below the 15m swing low (long) or above the 15m swing high (short) — minus 1× ATR(14) of the 15m chart for breathing room.
+- **Hard SL:** never wider than 1h S2 (long) or 1h R2 (short).
+- **Invalidation SL (thesis broken):** 1h S3 (long) or 1h R3 (short) — if this breaks, exit even if the primary SL hasn't fired.
+
+### Take-profit ladder (day-trading)
+
+- **TP1:** nearest 15m resistance (long) / support (short) — sell 30–40%, move SL to breakeven.
+- **TP2:** nearest 1h resistance / support — sell 30–40%.
+- **TP3:** 1h R2 or 4h mid-structure — trail the final 20–30% at 1× ATR(1h) below peak.
+
+### Day-trader momentum checks
+
+- Volume spike with no price follow-through → distribution, fade the move.
+- Price move on declining volume → weak, don't chase.
+- 5m vs 15m direction — aligned = ride; opposing = wait for resolution.
+- Failed 15m retest of prior breakdown → long reversal setup; failed retest of prior breakout → short reversal setup.
+- First 1h candle of a new session (London/NY open) often sets the day's range — mark its high and low as key intraday levels.
+
+### Output order for Phase 3
+
+1. Five per-timeframe blocks (4h → 1h → 15m → 5m → 1m — top-down read)
+2. Confluence matrix
+3. Chart links block (always — for visual verification):
+   ```
+   📊 Charts — verify indicators visually:
+     TradingView:  https://www.tradingview.com/chart/?symbol=BINANCE:[SYMBOL]USDT&interval=240
+                   (intervals: 1 / 5 / 15 / 60 / 240 / D)
+     Birdeye:      https://birdeye.so/token/[mint]?chain=solana   (Solana assets only)
+     DexScreener:  https://dexscreener.com/solana/[mint]           (Solana assets only)
+
+   On TradingView, open Indicators → add: RSI, MACD, Bollinger Bands, VWAP,
+   EMA 9, EMA 21, EMA 50, ATR, Stoch RSI, OBV, Volume. Values above should
+   match within ±2% of what you see on-chart.
+   ```
+4. Verdict line: `Setup: ARMED / WAITING / INVALID — [one-sentence reason, includes day-trade framing if intraday bias is decisive]`
 
 ---
 
