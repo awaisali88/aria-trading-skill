@@ -69,14 +69,30 @@ Post-filter universe: typically 30–60 candidates.
 
 ## Step 3: Score each survivor on the Pre-Pump Signal (100 points, weighted)
 
-Pull fresh data for each survivor:
+> 📌 **Profile-specific scoring:** classify each survivor per the ASSET-CLASS PROFILE SELECTION rules in `aria-protocol.md` (mint ends "pump" or PumpSwap graduate → Memecoin Profile; Binance/Bybit/MEXC-listed with ≥$500M MCap or established alts → Major Profile). Apply the matching weight table below. **In mixed scans, each token is scored with its own profile's weights** — label the profile next to the score so the reader knows which rule set fired.
+
+Pull fresh data per survivor:
 ```
-GeckoTerminal pool OHLCV at 5m, 15m, 1h, 4h
-GeckoTerminal pool trades (last 1h, filter for >$1K whales)
-Binance klines (if CEX-listed) at 5m, 15m, 1h
+Memecoin Profile  (pump.fun / PumpSwap / fresh Solana DEX):
+  GeckoTerminal pool OHLCV at 15m and 1h (2 fetches — for peak-check)
+  GeckoTerminal pool trades (last 1h, filter for >$1K whales)
+  Creator X handle + follower count + post velocity 1h/24h/7d
+                    (see references/pumpfun-social-playbook.md)
+  KOL-mention scan on $TICKER + token name site:x.com
+  Linked TG/Discord verification if present
+  GeckoTerminal token info (holders + top10 + mint/freeze authority)
+
+Major Profile  (BTC/ETH/XRP/CEX-listed alts):
+  Binance klines (MCP-preferred) at 5m, 15m, 1h, 4h
+  GeckoTerminal pool trades (if Solana DEX-listed Major) or
+    clodds_binance_spot_history for CEX order-tape
+  Headline news scan on <TICKER> + token name
+  Optional: KOL scan if time permits (nice-to-have for Majors)
 ```
 
-Compute 9 factors. Weights are chosen so no single hot factor can carry the score — **confluence is required**:
+### Major Profile — 9-factor Pre-Pump Signal (chart-primary, 60%)
+
+Weights are chosen so no single hot factor can carry the score — **confluence is required**:
 
 | # | Factor | Weight | "Primed" = full points when |
 |---|--------|--------|---------------------------------|
@@ -90,7 +106,29 @@ Compute 9 factors. Weights are chosen so no single hot factor can carry the scor
 | 8 | Holder health | 5 | Top 10 <40% · mint/freeze renounced · creator hasn't sold >20% in last 7d |
 | 9 | Macro tailwind | 5 | BTC/SOL green on 1h · F&G rising vs yesterday's close |
 
-Scoring thresholds:
+**Weight distribution:** chart/TA 60% · on-chain flow 20% · narrative + social 15% · other 5%.
+
+### Memecoin Profile — 8-factor Pre-Pump Signal (social-primary, 55%)
+
+For pump.fun / PumpSwap / fresh Solana DEX tokens. **Social is the leading indicator, not chart.** Charts are used only for peak-status context.
+
+| # | Factor | Weight | "Primed" = full points when |
+|---|--------|--------|---------------------------------|
+| 1 | **Twitter/X social velocity** | **25** | Post velocity last 1h ≥ 3× of 24h avg AND velocity 24h ≥ 2× of 7d avg (both tiers). If ≥ 1.5× only on one tier → partial (10-17 pts). VIRAL classification per `pumpfun-social-playbook.md` full points. |
+| 2 | **Creator / KOL audit** | **15** | Creator X handle resolved + ≥90d account age + zero prior rugs + ≥1 🦈 (100K-1M) KOL mention in 24h. Zero the factor if creator unresolved after 3 fallbacks OR prior-rug detected OR MANIPULATED flag. |
+| 3 | **Narrative ignition** | **15** | Fresh catalyst in last 4h: CEX listing rumor, 🐋 KOL pick, partnership, narrative breakout (first-of-kind meme) · OR `clodds_opinion` returns BUY-NOW · OR Polymarket/Metaculus implied prob >60% on token-specific question. |
+| 4 | **On-chain whale + holder flow** | **15** | Top 10 <25% AND net accum >$10K/1h from trades >$1K AND holder count growing >10%/24h. |
+| 5 | **Holder health + security** | **10** | Mint+freeze revoked (from GeckoTerminal info) + LP locked (PumpSwap standard) + zero external insider-cluster report + creator wallet <20% supply with no recent sells. |
+| 6 | **Chart peak-check** | **10** | Per Phase 3 Memecoin Peak-Check Mode (15m + 1h only): pre-peak base OR new-leg-forming with expanding volume. Zero if blow-off top confirmed / broken down. |
+| 7 | **Liquidity & slippage** | **5** | Pool liq ≥$500K AND round-trip slip at $500 notional <5% AND vol/mcap 10-100% (healthy active, not manip). |
+| 8 | **Macro tailwind** | **5** | SOL green on 1h · F&G trending up vs yesterday · memecoin sector not COLD. |
+
+**Weight distribution:** social + narrative + creator 55% · on-chain + holder 25% · chart (peak-check only) 10% · liquidity + macro 10%.
+
+**Why this works for memecoins:** a 2-day-old token with 500 holders has no statistically-meaningful TA — RSI/MACD on 200 bars of random walk is noise. But a 🐋 KOL retweet at T-0 precedes the price move by ~5-15 minutes with high reliability. The scanner now scores the signals that actually lead price in this market.
+
+### Scoring thresholds (identical for both profiles)
+
 - **≥ 75 → 🟢 BUY-NOW** (high conviction, move expected in next 30–60 min)
 - **55–74 → 🟡 WAIT-FOR-TRIGGER** (setup armed but not fired; define specific trigger + wait time)
 - **< 55 → ⚪ SKIP** (include in the "surfaced for transparency" tail)
@@ -101,11 +139,12 @@ Scoring thresholds:
 
 Sort survivors by score descending. Take top N (user-specified; default 5).
 
-**For each top-N result, emit this condensed block — NOT the full 9-phase walk.** Scanning 5 tokens with the deep protocol is slow and blows the 1-hour window:
+**For each top-N result, emit one of the two profile-specific condensed blocks below — NOT the full 9-phase walk.** Scanning 5 tokens with the deep protocol is slow and blows the 1-hour window.
 
+**Major Profile condensed block (chart-primary):**
 ```
 ─────────────────────────────────────────────────────────────
-① $[TICKER] — Score XX/100 · [BUY-NOW / WAIT-FOR-TRIGGER] · [VENUE]
+① $[TICKER] — Score XX/100 · [BUY-NOW / WAIT-FOR-TRIGGER] · [VENUE] · [Major]
    Price now:  $X.XX       ·  1h Δ: ±X%   ·  24h Δ: ±X%
    Liquidity:  $X.XM       ·  Vol/MCap: X%
    
@@ -124,6 +163,34 @@ Sort survivors by score descending. Take top N (user-specified; default 5).
    SL:           $X (-X%)
    1h target:    $X (+X%)                 ← primary TP window
    2-4h target:  $X (+X%)                 ← extension if momentum holds
+   
+   → Expected move window: next XX minutes
+   → Confidence: [HIGH / MEDIUM / LOW]
+─────────────────────────────────────────────────────────────
+```
+
+**Memecoin Profile condensed block (social-primary):**
+```
+─────────────────────────────────────────────────────────────
+① $[TICKER] — Score XX/100 · [BUY-NOW / WAIT-FOR-TRIGGER] · pump.fun/PumpSwap · [Memecoin]
+   Price now:  $X.XX       ·  1h Δ: ±X%   ·  24h Δ: ±X%
+   Liquidity:  $XXK        ·  Pool age: Nd/h    ·  MCap $XM
+   
+   Social velocity:  1h X× 24h-avg · 24h Y× 7d-avg · classification: [VIRAL/ACTIVE/MOD/DEAD]
+   Creator X:        @handle · XX,XXX fol · account Yd · prior rugs: [none/N]
+   KOL tiers (24h):  🐋 [handles] · 🦈 [handles] · 🐠 N mentions · 🦐 N
+   Narrative:        [theme] · catalyst: [fresh listing/KOL pick/partnership/none]
+   On-chain (1h):    whale net +/- $XK · top10 X% · holder Δ24h +/-X%
+   Security:         mint ✓/✗ · freeze ✓/✗ · LP locked ✓/✗ · shill: [LOW/MED/HIGH]
+   Chart peak-check: [pre-peak base / still peaking / new leg / ranging / peaked]
+   Liquidity:        $XXK pool · $500 round-trip slip X%
+   Macro:            [supports / neutral / opposes]
+   
+   Entry:        [BUY NOW @ $X] OR [trigger: KOL 🐋 retweet OR velocity >3×]
+   Size:         [X SOL / $XXX — small-size on thin pools; see slip table]
+   SL:           $X (-X%) ← 15m swing × 0.95 (memecoin rule)
+   1h target:    $X (+X%)
+   2-4h target:  $X (+X%)   ← if narrative holds
    
    → Expected move window: next XX minutes
    → Confidence: [HIGH / MEDIUM / LOW]

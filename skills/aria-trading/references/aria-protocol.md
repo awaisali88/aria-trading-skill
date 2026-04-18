@@ -6,6 +6,35 @@ Run all phases in order for every analysis request. Show tool output from each p
 
 ---
 
+## ⚖ ASSET-CLASS PROFILE SELECTION (run this first, before Phase 1)
+
+Pump.fun memecoins and CEX majors are different **information markets**. Chart/TA is high-signal for BTC/ETH/XRP where liquidity is deep and flows dominate. For a 2-day-old Solana memecoin with 500 holders, TA indicators on a 200-bar OHLCV series are pattern-matching on random walks — the real leading indicator is **the creator's X handle + KOL retweets + post velocity**. Apply the correct profile before starting the phases.
+
+**Classify the primary token in the request:**
+
+| Classifier (any one hit → Memecoin Profile) | Otherwise → Major Profile |
+|---|---|
+| Mint address ends in `pump` (pump.fun origin) | CEX-listed (Binance / Bybit / MEXC / OKX / Coinbase) spot pair |
+| Graduated via PumpSwap / LetsBonk / Moonshot / Raydium-launchpad | Market cap ≥ $500M |
+| Origin pool on Solana DEX + MCap <$100M + age <90 days | Token age ≥ 1 year with established listings |
+| User explicitly says "memecoin" / "pump.fun" / "fresh graduate" | User says "BTC" / "ETH" / "altcoin" / "CEX" / a Binance-listed symbol |
+
+**Profile-dependent behavior diverges in three places:**
+
+| Phase | Memecoin Profile | Major Profile |
+|---|---|---|
+| **Phase 3** (chart) | Simplified 4-question peak-check on 15m + 1h only (see §Phase 3 Memecoin Mode below) | Full 5-TF × 10-indicator block (default) |
+| **Phase 5** (social) | **Promoted — runs immediately after Phase 1 Security, before Phase 2 Market.** Expanded 15-line "Pump.fun Social Deep-Dive" block with creator-X audit, post velocity, KOL tiers, shill detection. **See `references/pumpfun-social-playbook.md`** for operational procedures. | Standard 7-line sentiment block in its normal Phase 5 slot |
+| **Phase 7** (scoring) | Memecoin Profile weights (social 55%, chart 10%) — see §Phase 7 | Major Profile weights (chart 40%, social 10%) — default table |
+
+All other phases (1 Security · 2 Market · 4 On-chain · 6 Macro · 8 Trade plan · 9 Alerts · 10 Action Summary) run identically for both profiles.
+
+**Mixed reports:** When the same report contains both profiles (e.g. "scan top 5 pump.fun + top 5 Binance"), tag each token's section header with `[Memecoin Profile]` or `[Major Profile]` so the reader knows which ruleset was applied.
+
+**Why these weights are different:** for memecoins, 40-60% of the variance in next-hour returns comes from narrative ignition (KOL picks, viral threads) and creator-account activity — these cause charts, not the other way around. Treating chart signals as leading indicators on these tokens means arriving late every time. For majors, the opposite: order-flow is deep enough that the chart leads the social narrative.
+
+---
+
 ## PHASE 1: IDENTITY & SECURITY CHECK
 
 **Tools:** `clodds_token_security` → `clodds_pumpfun token <mint>` → `clodds_research "[token]"` → `web_search "[token name] solana"` → `web_fetch [solscan or pump.fun page]`
@@ -88,7 +117,13 @@ For CEX-listed tokens (deep books), a single line "negligible at <$10K notional"
 
 ## PHASE 3: TECHNICAL ANALYSIS — MULTI-TIMEFRAME CHART + INDICATORS
 
-**This is the default Phase 3 behavior for every market/token analysis** — not just day trading. Every time ARIA is asked to analyze a market, scan for opportunities, or evaluate a token, it must run the full multi-timeframe chart analysis with the complete indicator suite on **1m · 5m · 15m · 1h · 4h**. Only extend to swing/position timeframes (1d / 3d / 1w) when the user explicitly says "swing", "long-term", "HODL", or specifies a holding window > 3 days — and even then, the 5 intraday timeframes still run.
+> 📌 **Profile-specific Phase 3:**
+> — **Major Profile** (BTC / ETH / XRP / Binance-listed alts) → run the **full 5-TF × 10-indicator** block below (default behavior).
+> — **Memecoin Profile** (pump.fun / PumpSwap / fresh Solana DEX) → run the **simplified Peak-Check Mode** (see `§ Phase 3 — Memecoin Peak-Check Mode` further down). Skip the 5-TF × 10-indicator block entirely. Charts on fresh memecoins are used for **peak-status context** (already peaked / still peaking / new leg), not as primary predictors.
+
+### Major Profile — full multi-TF + indicators (default)
+
+**This is the default Phase 3 behavior for every Major-Profile analysis** — not just day trading. Every time ARIA is asked to analyze a CEX major, scan for opportunities, or evaluate a listed alt, it must run the full multi-timeframe chart analysis with the complete indicator suite on **1m · 5m · 15m · 1h · 4h**. Only extend to swing/position timeframes (1d / 3d / 1w) when the user explicitly says "swing", "long-term", "HODL", or specifies a holding window > 3 days — and even then, the 5 intraday timeframes still run.
 
 **Always load `references/indicators.md` at the start of Phase 3.** That file contains the exact computation formula, interpretation rules, and chart-link format for every indicator below. Do not skip it — precise calculation matters, and the model should show the math path, not guess.
 
@@ -269,6 +304,60 @@ If any of the six fails, mark the setup "WAITING" and tell the user what needs t
 
 ---
 
+### Phase 3 — Memecoin Peak-Check Mode (pump.fun / PumpSwap tokens only)
+
+For Memecoin-Profile tokens, the full 5-TF × 10-indicator block is **replaced** by this focused peak-status read. Pull OHLCV on 15m and 1h only (2 fetches, not 10) — then answer 4 questions.
+
+**Data pulls (just these two):**
+```
+15m: web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=15&limit=100
+1h:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/hour?aggregate=1&limit=60
+```
+
+If 15m returns <20 bars OR 1h returns <10 bars → label `INSUFFICIENT DATA — n bars only` and skip the block entirely; the report will still run on social + on-chain + security. Do not fabricate indicator values to fill space.
+
+**Emit this exact 4-question block:**
+
+```
+═══ Pump.fun Peak-Check — $[TICKER] ════════════════════════════════════
+
+1. Peak status:      [pre-peak base / still peaking / blow-off top confirmed /
+                      ranging post-peak / new leg forming / broken down]
+   Evidence:         [1-line citing the 1h bar pattern — e.g. "long upper wick on
+                      latest 1h with volume spike then collapse = blow-off"]
+
+2. VWAP position:    price $X.XX is [X.X% above / X.X% below / at] session VWAP $X.XX
+                     [+ve VWAP spread + rising trend = strong / -ve + declining = exhausted]
+
+3. Volume trend:     [expanding on rally / contracting on rally (exhaustion) /
+                      expanding on drop (capitulation) / flat-ranging]
+   Evidence:         [last 3×1h vol vs prior 10×1h avg = X.X× ratio]
+
+4. Structure (15m + 1h):
+   15m: [HH-HL uptrend / HH-LH topping / LH-LL downtrend / range]
+   1h:  [HH-HL uptrend / HH-LH topping / LH-LL downtrend / range]
+   → TF alignment: [aligned-bull / aligned-bear / divergent]
+
+Chart verdict (1 line): ENTER / WAIT / AVOID — <reason>
+
+Chart links (always): Birdeye · DexScreener · GeckoTerminal · pump.fun
+```
+
+**SL / TP anchoring for memecoins (simpler than Major Profile):**
+- **SL:** below the 15m swing low × 0.95 (give memecoins 5% below swing as buffer — ATR is unreliable on <30 bars)
+- **TP1:** prior 15m resistance or session high (whichever closer)
+- **TP2:** 1h R1 from the peak-check block
+- **TP3:** 1.5× TP2 distance above entry, with trailing 15% below peak after +30%
+
+**Explicitly suppressed from memecoin mode:**
+- RSI(14), MACD(12,26,9), BB(20,2), Stoch RSI, ATR(14), EMA(9/21/50), OBV — not computed
+- 5-TF confluence matrix — replaced by the 15m+1h TF-alignment line above
+- Per-timeframe blocks on 1m / 5m / 4h — not needed for the peak-check decision
+
+The weight the full TA suite would have carried (40-60% of the composite score) is redistributed to social/narrative in Phase 7 Memecoin-Profile scoring. See `§ PHASE 7` below.
+
+---
+
 ## PHASE 4: ON-CHAIN INTELLIGENCE
 
 **Tools:** `clodds_whale_tracking` → `clodds_metrics` → `clodds_divergence` → `clodds_analytics` → `web_fetch birdeye.so/token/<mint>?chain=solana`
@@ -301,6 +390,12 @@ If three or more of the above cannot be filled even after the fallback chain, re
 ---
 
 ## PHASE 5: SOCIAL & SENTIMENT
+
+> 📌 **Profile-specific Phase 5:**
+> — **Memecoin Profile** → runs **immediately after Phase 1 Security** (before Phase 2 Market). Use the **expanded 15-line Pump.fun Social Deep-Dive block** (see `§ Phase 5 — Memecoin Expanded Block` below). Load `references/pumpfun-social-playbook.md` for the operational procedures (creator audit, velocity math, KOL tiers, shill detection).
+> — **Major Profile** → runs in the normal Phase 5 slot with the standard 7-line sentiment block (default behavior below).
+
+### Major Profile — standard 7-line block (default)
 
 **Tools:** `web_search "$[TICKER] crypto"` → `web_search "[token name] twitter pump.fun"` → `web_search "[token name] telegram"` → `web_fetch [project X page]` → `web_fetch opinion.trade` → `clodds_news [token]` → `clodds_feeds` → `clodds_opinion "[token] — buy or sell?"` → `clodds_edge "[token] — any asymmetric opportunity?"`
 
@@ -348,6 +443,84 @@ Then the long-form context (after the block):
 - Recent narrative drivers (~3 bullets)
 - Risk flags surfaced by search (e.g. CryptoSlate insider reports, Messari manipulation flags)
 - Sources list (clickable URLs)
+
+---
+
+### Phase 5 — Memecoin Expanded Block (pump.fun / PumpSwap tokens)
+
+For Memecoin-Profile tokens, this block **replaces** the standard 7-line sentiment block AND **runs out of order — immediately after Phase 1 Security, before Phase 2 Market**. For memecoins, social is a **leading indicator of price**; running it first informs the rest of the pipeline (chart peak-check, scoring, sizing).
+
+**Load `references/pumpfun-social-playbook.md` at the start of this block** — that file contains the operational procedures (creator-X audit, post-velocity math, KOL tier thresholds, shill-detection heuristics, Telegram verification). This section just defines the rendered output.
+
+**Tools (run in this order):**
+```
+1. Resolve creator X handle:
+   clodds_pumpfun token <mint>                    → find creator wallet + "Links" block (Twitter/TG/website)
+   If Twitter link missing: web_search "[token name] [mint first 8 chars] site:x.com"
+                            + web_search "<ticker> solana memecoin"
+2. Fetch creator X stats:
+   web_fetch https://x.com/<handle>                → followers, account age, post history
+   web_search "<handle> rug OR scam OR prior"      → prior-rug check
+3. Compute post velocity:
+   web_search "$<TICKER> site:x.com"               → count results with date filter last 1h, 24h, 7d
+   velocity_1h  = posts_last_1h / (posts_last_24h ÷ 24)
+   velocity_24h = posts_last_24h / (posts_last_7d ÷ 7)
+4. KOL tier scan:
+   web_search "$<TICKER>" → scan result handles
+   tier by follower count: 🐋 >1M · 🦈 100K-1M · 🐠 10K-100K · 🦐 <10K
+5. Verify Telegram (if linked):
+   Use the linked TG URL — count active-member number from landing page metadata
+6. Shill/bot detection:
+   Scan the X search results for: copy-paste tweet text, coordinated timing (>5 posts within 60s),
+   generic emoji-heavy content, newly-created accounts, zero profile photos.
+```
+
+**Emit this exact 15-line block:**
+
+```
+═══ Pump.fun Social Deep-Dive — $[TICKER] ═══════════════════════════════════
+
+Creator X handle:     @<handle>  ·  followers XX,XXX  ·  account age Yd
+                      prior rugs: [none verified / N detected — list]
+Linked X account:     @<handle>  (if different from creator) · XX,XXX followers
+                      (or: same-as-creator / none-linked)
+Post velocity (1h):   N posts   ·  vs 24h-avg M posts/hr   =  X.X× acceleration
+Post velocity (24h):  N posts   ·  vs 7d-avg M posts/day   =  X.X× acceleration
+Reply engagement:     avg X replies/post  ·  ~X% estimated-human
+                      (scan ratio of unique-author replies vs copy-paste)
+KOL mentions (tiers): 🐋 >1M fol:   [@handles or None]
+                      🦈 100K-1M:   [@handles]
+                      🐠 10K-100K:  [@handles]
+                      🦐 <10K:      [count only]
+Telegram:             [link verified / dead link / not present]
+                      group size XX,XXX  ·  active msgs/hr [est]
+Discord / Website:    [status]
+Catalyst pipeline:    [listings / partnerships / CEX pickup / events — with date]
+Shill/bot detection:  [LOW / MED / HIGH]  — evidence: [copy-paste / timing / accounts]
+Narrative:            [AI / meme / celebrity / political / utility / other]
+Mainstream coverage:  [CoinDesk / Decrypt / The Block / CryptoSlate / CMC AI / KuCoin blog / none]
+Community growth 24h: [holder-count delta: +/- N  vs 24h ago]
+──────────────────────────────────────────────────────────────────────────────
+Social signal:        [VIRAL / ACTIVE / MODERATE / DEAD / MANIPULATED]
+                      velocity + KOL tier + shill-score composite
+```
+
+**Social-signal classification rules:**
+- **VIRAL** — velocity ≥3×, ≥1 🐋 or ≥3 🦈 KOLs, shill=LOW, creator has no prior rugs → full points in Phase 7
+- **ACTIVE** — velocity 1.5–3×, ≥1 🦈 KOL or ≥3 🐠, shill=LOW/MED → 60-80% of Phase 7 social points
+- **MODERATE** — velocity 1.0–1.5×, mixed KOL tiers, shill=MED → 40-60%
+- **DEAD** — velocity <1.0×, no KOLs, community quiet → ≤20%
+- **MANIPULATED** — velocity ≥3× but shill=HIGH (coordinated pattern detected) → ZERO on social, flag in Phase 7 narrative score as well
+
+**Fallback when data is missing:**
+- Creator X handle not resolvable after fallback chain → render `Creator X: UNKNOWN (3 fallbacks failed: [list])` and cap Phase 7 social score at 3/25 regardless of velocity
+- Linked X account dead (404 / suspended) → render `Linked X: DEAD — HIGH-RISK` and flag for manual review
+
+**Then the long-form context (after the block) — same as Major Profile:**
+- Community color (TG / Discord activity if checked)
+- Recent narrative drivers (~3 bullets)
+- Risk flags surfaced by search (insider reports, manipulation flags, rug-watch)
+- Sources list with clickable URLs
 
 ---
 
@@ -413,9 +586,14 @@ The macro verdict line is what informs Phase 7 factor #10 (Macro alignment).
 
 ## PHASE 7: ARIA SCORE & PROBABILITY
 
-**MANDATORY for EVERY token analysis.** Composite score alone is NOT acceptable. The full 10-factor table must be rendered for each token, with the **Signal column populated** (one short phrase per factor explaining the score). On multi-token reports, render the scorecard table once per token — never collapse to composites only.
+**MANDATORY for EVERY token analysis.** Composite score alone is NOT acceptable. The full factor table must be rendered for each token, with the **Signal column populated** (one short phrase per factor explaining the score). On multi-token reports, render the scorecard table once per token — never collapse to composites only.
 
-**If a factor cannot be scored due to missing data**, score it 5/10 (neutral) and footnote the reason with `†`. Never omit the table or substitute a single composite number.
+**If a factor cannot be scored due to missing data**, score it at the midpoint of its weight (neutral) and footnote the reason with `†`. Never omit the table or substitute a single composite number.
+
+> 📌 **Profile-specific Phase 7 scoring:**
+> — **Major Profile** → 10 equal-weight factors (each /10) totaling /100 — default table below.
+> — **Memecoin Profile** → 8-factor Memecoin weights totaling /100 with social dominant (55%) — see `§ Phase 7 — Memecoin Profile Scorecard` below.
+> In both profiles, the final action thresholds (80-100 Strong Buy / 65-79 Buy / 50-64 Spec / 35-49 Avoid / 20-34 Sell / 0-19 Exit) are identical.
 
 Using data from all prior phases + `clodds_opinion "[token] — buy or sell?"`:
 
@@ -465,6 +643,77 @@ Using data from all prior phases + `clodds_opinion "[token] — buy or sell?"`:
 - **Liquidity (8):** 10 = >$10M liq + <0.5% slip @ $1K · 5 = $1–10M · 0 = <$500K
 - **Narrative (9):** 10 = fresh narrative + organic growth + `clodds_opinion` returns bullish + catalyst pipeline · 5 = mature meme / mixed opinion · 0 = exhausted narrative / `clodds_opinion` bearish / no catalyst
 - **Macro (10):** 10 = SUPPORTS · 5 = NEUTRAL · 0 = OPPOSES (from Phase 6 verdict line)
+
+---
+
+### Phase 7 — Memecoin Profile Scorecard (pump.fun / PumpSwap)
+
+For Memecoin-Profile tokens, **replace** the 10-equal-weight table with this 8-factor weighted table. Social is dominant (55%), chart is minor (10%). The thresholds for action (Strong Buy / Buy / Spec / Avoid / Sell / Exit) are unchanged.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│           ARIA SCORECARD — $[TICKER]  [Memecoin Profile]        │
+├─────────────────────────────────────┬─────────┬─────────────────┤
+│ Factor                              │ Score   │ Signal          │
+├─────────────────────────────────────┼─────────┼─────────────────┤
+│ 1.  Social sentiment + velocity     │   /25   │ [VIRAL/ACTIVE...│
+│ 2.  Creator / KOL audit             │   /15   │ [safe/flag/rug] │
+│ 3.  Narrative strength              │   /15   │ [theme + fresh] │
+│ 4.  On-chain whale + holder flow    │   /15   │ [accum/distrib] │
+│ 5.  Security (mint/freeze/LP)       │   /10   │ [pass/flag/stop]│
+│ 6.  Chart peak-check                │   /10   │ [pre/still/post]│
+│ 7.  Liquidity & slippage            │    /5   │ [$XM liq]       │
+│ 8.  Macro alignment                 │    /5   │ [supp/neut/opp] │
+├─────────────────────────────────────┼─────────┼─────────────────┤
+│ COMPOSITE SCORE                     │  XX/100 │                 │
+└─────────────────────────────────────┴─────────┴─────────────────┘
+
+📈 Probability UP    (24h): XX%
+📉 Probability DOWN  (24h): XX%
+➡️ Probability SIDEWAYS:    XX%
+```
+
+**Memecoin per-factor anchors:**
+- **Social sentiment + velocity (/25)** — from Phase 5 Expanded Block:
+  - 25 = VIRAL (velocity ≥3×, 🐋 KOL or 3+ 🦈, shill LOW, no manip flag)
+  - 18-24 = ACTIVE (velocity 1.5-3×, 🦈 or 3+ 🐠, shill LOW/MED)
+  - 10-17 = MODERATE (velocity 1-1.5×, mixed tiers, shill MED)
+  - 4-9 = DEAD (velocity <1×, no KOLs, quiet TG)
+  - 0 = MANIPULATED (HIGH shill + coordinated timing)
+- **Creator / KOL audit (/15)** — hard gates; stack failures zero the factor:
+  - 15 = creator doxxed + ≥90d account + zero prior rugs + active posting
+  - 10 = anon but ≥90d account + no prior rugs + active
+  - 5 = new account (<30d) or sparse history, no flags
+  - 0 = creator prior-rug detected OR handle unresolved after 3 fallbacks OR linked X dead
+- **Narrative strength (/15)**:
+  - 15 = fresh narrative (first-of-kind) + organic growth + CEX-listing catalyst in pipeline
+  - 10 = fresh meme riding broader sector rotation
+  - 5 = mature/derivative meme
+  - 0 = exhausted narrative / copycat / no catalyst
+- **On-chain whale + holder flow (/15)** — from Phase 4:
+  - 15 = top10 <25% + net accum >$10K/1h + holder count growing
+  - 10 = top10 25-40% + mixed flow
+  - 5 = top10 40-50% + flat flow
+  - 0 = top10 >50% OR net distrib >$10K/1h
+- **Security (/10)** — pass/fail style:
+  - 10 = mint+freeze revoked + LP locked (pump.fun standard) + no external insider report
+  - 5 = one flag (e.g. insider-cluster external report but on-chain clean)
+  - 0 = any Phase 1 HARD-STOP fires (but then trade plan is SUPPRESSED anyway)
+- **Chart peak-check (/10)** — from Phase 3 Peak-Check Mode:
+  - 10 = pre-peak base OR new-leg-forming + volume expanding
+  - 6 = still-peaking + volume healthy
+  - 3 = ranging post-peak with accumulation evidence
+  - 0 = blow-off top confirmed / broken down / exhaustion signals
+- **Liquidity & slippage (/5)**:
+  - 5 = >$500K pool + <5% round-trip slip @ $500 notional
+  - 3 = $100K-$500K pool
+  - 0 = <$50K pool (5K round-trip > 20%)
+- **Macro (/5)** — same as Major:
+  - 5 = SUPPORTS · 3 = NEUTRAL · 0 = OPPOSES
+
+**Hard-stop short-circuit:** if Phase 1 HARD-STOP fires (mint not revoked / LP unlocked / creator prior-rug / honeypot / insider-cluster), the composite score does not gate anything — Phase 8 trade plan is suppressed regardless. The scorecard still renders for educational context with Security scored 0/10.
+
+**Common-sense sanity check:** if Factor 1 (Social) scores 0 because MANIPULATED flag fired, and Factor 2 (Creator) scores 0 for prior rug, the composite won't clear Spec band even with a perfect chart — which is correct. Chart alone doesn't save a socially-rigged or creator-compromised memecoin.
 
 ---
 

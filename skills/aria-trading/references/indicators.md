@@ -343,7 +343,98 @@ you see on-chart. Any material mismatch → tell me and I'll recompute.
 
 ## Reporting discipline
 
-For every per-timeframe block in Phase 3, **all** of these must be present:
+For every per-timeframe block in Phase 3 **under the Major Profile**, **all** of these must be present:
 RSI(14) · MACD(12,26,9) · BB(20,2) · VWAP · EMA(9/21/50) · ATR(14) · Stoch RSI · OBV · volume ratio · R1/R2/R3 · S1/S2/S3 · candle pattern · chart structure · one-line key observation.
 
 If a calculation fails (not enough candles, missing volume field, etc.) state so explicitly — never fabricate values.
+
+---
+
+## Memecoin Peak-Check Mode — simplified indicator set
+
+For **Memecoin Profile** tokens (pump.fun / PumpSwap / fresh Solana DEX), Phase 3 uses a reduced indicator set on 15m + 1h only. The heavy multi-TF × multi-indicator suite above is **explicitly suppressed** — not because indicators break, but because on a <10-day-old token with <1,000 holders, the OHLCV series is dominated by noise and a handful of whale trades. Forcing RSI(14) on 30 bars of manipulated tape produces false confidence; the real signal lives in Phase 5 social data.
+
+Full procedure in `aria-protocol.md` → `Phase 3 — Memecoin Peak-Check Mode`. This section documents the minimal indicator compute needed for the 4-question block.
+
+### Data pulls (2 only)
+
+```
+15m: web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=15&limit=100
+1h:  web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/hour?aggregate=1&limit=60
+```
+
+If 15m <20 bars OR 1h <10 bars → render `INSUFFICIENT DATA — n bars only` and skip the block entirely. Do not fabricate.
+
+### Compute only these 4 things
+
+**1. Peak status** (qualitative read of the 1h series)
+
+Look at the last 10-20 1h bars and classify:
+- **pre-peak base** — sideways range <10% spread for ≥8 bars with rising volume
+- **still peaking** — last 3+ bars closed green with each close > prior high; volume rising
+- **blow-off top confirmed** — one bar closed with long upper wick (upper wick ≥ 2× body) AND closed red AND volume spiked ≥3× then next bar volume collapsed
+- **ranging post-peak** — ≥6 bars sideways after a peak bar, holding near peak ±15%
+- **new leg forming** — clear higher-low printed above a prior pullback, next bar breaking the pullback high
+- **broken down** — last 5 1h closes all red, each below prior low; volume confirming sell pressure
+
+**2. VWAP position** (session VWAP only — no 20-bar/50-bar anchored variants)
+
+```
+session_vwap = sum(typical_price[i] × volume[i]) / sum(volume[i])
+                where typical_price = (high + low + close) / 3
+                    and the session = today's UTC bars on the 1h series
+```
+
+Render: `price $X.XX is [X.X%] above/below session VWAP $Y.YY`
+
+Interpretation:
+- price ≥3% above VWAP + rising trend → momentum extended but intact
+- price near VWAP ±1% → neutral zone
+- price ≥3% below VWAP + declining → exhausted, avoid longs
+
+**3. Volume trend** (last 3 bars vs prior 10 bars on 1h)
+
+```
+vol_ratio = mean(volume[last 3 bars]) / mean(volume[bars -13 through -4])
+```
+
+Classify:
+- ratio ≥ 1.5 on green bars → **expanding on rally** (healthy)
+- ratio ≥ 1.5 on red bars → **expanding on drop** (capitulation or panic)
+- ratio < 0.8 on green bars → **contracting on rally** (exhaustion — do not chase)
+- ratio 0.8-1.5 → **flat-ranging**
+
+**4. Structure (15m + 1h)**
+
+Eyeball the swing highs/lows over the last 20 bars on each TF:
+- **HH-HL uptrend** — each swing high > prior swing high, each swing low > prior swing low
+- **HH-LH topping** — peak made a higher high but the pullback's swing low is now printing lower = topping structure
+- **LH-LL downtrend** — classic lower-high lower-low sequence
+- **range** — swing highs and lows roughly the same over 20 bars
+
+Render as the TF-alignment line: `aligned-bull / aligned-bear / divergent`.
+
+### Explicitly suppressed indicators (for Memecoin Profile)
+
+- **RSI(14)** — noisy on 30-bar memecoin series; false overbought/oversold readings are common
+- **MACD(12,26,9)** — requires ≥35 bars for the signal line; many fresh memecoins don't have that
+- **Bollinger Bands(20,2)** — the band width on a vertical pump compresses to meaninglessness right at the peak
+- **Stoch RSI** — noise-on-noise
+- **ATR(14)** — unreliable on thin tape where a single whale print dominates the range
+- **EMA(9/21/50)** — 50-bar EMA is impossible on a 30-bar token; shorter EMAs just hug price on impulsive moves
+- **OBV** — meaningful on mature tokens but on a token with <1,000 holders, two whale trades flip the direction
+
+The compute cost saved by skipping these (5 TFs × 10 indicators ≈ 50 compute-operations per token) is reallocated to the deeper social analysis in Phase 5.
+
+### Chart-link block (Memecoin Profile)
+
+```
+📊 Charts — verify peak-status visually:
+  Birdeye:       https://birdeye.so/token/[mint]?chain=solana
+  DexScreener:   https://dexscreener.com/solana/[mint]
+  GeckoTerminal: https://www.geckoterminal.com/solana/pools/[pool]
+  pump.fun:      https://pump.fun/coin/[mint]
+
+Look at the 1h chart. Does it match the "Peak status" classification above?
+If yes, proceed with the trade plan. If no — the chart-read is wrong; re-examine.
+```
