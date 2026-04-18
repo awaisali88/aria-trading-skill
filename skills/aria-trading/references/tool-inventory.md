@@ -104,20 +104,47 @@ All called as `clodds_pumpfun <subcommand>`:
 
 ---
 
-## PREDICTION MARKETS
+## PREDICTION MARKETS & AI OPINION — first-class intelligence signal
 
-| Tool | Purpose |
-|------|---------|
-| `clodds_polymarket_markets` | Search Polymarket prediction markets |
-| `clodds_polymarket_orderbook` | Live orderbook — smart money probability pricing |
-| `clodds_polymarket_positions` | Your open Polymarket positions |
-| `clodds_polymarket_balance` | Polymarket account balance |
-| `clodds_kalshi_markets` | Kalshi regulated markets — macro/economic events |
-| `clodds_kalshi_orderbook` | Kalshi orderbook depth |
-| `clodds_kalshi_positions` | Your open Kalshi positions |
-| `clodds_kalshi_balance` | Kalshi account balance |
-| `clodds_predictit` | PredictIt political/economic markets |
-| `clodds_metaculus` | Metaculus community forecasts |
+These tools are **actively used in Phase 5 (social) and Phase 6 (macro) of every token analysis** — not optional, not reference-only. Prediction-market implied probabilities are smart-money probability estimates and fold directly into the Phase 7 scorecard (factor #7) and the Pre-Pump Signal Score (factor #6).
+
+| Tool | Purpose | When to use |
+|------|---------|-------------|
+| `clodds_polymarket_markets "<query>"` | Search Polymarket — deep liquid crypto event odds | Query by ticker, project name, or narrative on every token analysis + every macro check |
+| `clodds_polymarket_orderbook <market_id>` | Live orderbook — extract implied probability | Run on every market_id surfaced by `_markets` — `impliedProb = bestBid_YES / 100` or mid-market of bid+ask |
+| `clodds_polymarket_positions` | Your open Polymarket positions | Only for portfolio / trade execution |
+| `clodds_polymarket_balance` | Polymarket account balance | Only for trade execution |
+| `clodds_polymarket_buy` / `_sell` | **[TRADE]** Polymarket execution | Only on explicit user execution request |
+| `clodds_kalshi_markets "<query>"` | Kalshi regulated US binary markets — regulatory/macro events | Fed rate decisions, CPI prints, SEC/ETF approvals, macro triggers |
+| `clodds_kalshi_orderbook <market_id>` | Kalshi orderbook depth | Extract implied prob on every relevant market |
+| `clodds_kalshi_positions` / `_balance` / `_buy` / `_sell` | Portfolio + execution | Only when user is trading Kalshi directly |
+| `clodds_metaculus "<query>"` | Metaculus community forecasts | Long-horizon crypto/macro question consensus — use alongside Polymarket to spot retail-vs-analyst divergences |
+| `clodds_trading_manifold "<query>"` | Manifold play-money forecasts (retail-weighted) | Cross-check vs Polymarket — divergence >10pp = tradeable signal |
+| `clodds_predictit` | PredictIt political/economic markets | US political events with crypto spillover (regulation, administration changes) |
+| `clodds_predictfun` | PredictFun alt-data | Optional cross-check |
+| `clodds_opinion "<TICKER> — buy/sell given [context]?"` | **AI-synthesized trade opinion** on the specific setup | MANDATORY on every token analysis — folds into Phase 5 sentiment block + Phase 7 factor #9 |
+
+**Implied-probability extraction rule:**
+```
+bestBid_YES / 100           (most common, polymarket YES-side quote)
+(bestBid + bestAsk) / 2 / 100   (mid-market, more stable)
+```
+If the orderbook is thin (spread >10pp), flag the prob as `LOW-CONFIDENCE` in the rendered block.
+
+**Query patterns that work across all these tools:**
+- By ticker: `"BTC"`, `"SOL"`, `"XRP"`
+- By project name: `"Bitcoin"`, `"Solana"`, `"Ripple"`
+- By narrative: `"ETF approval"`, `"rate cut"`, `"CPI"`, `"halving"`
+- By specific event: `"SOL ETF"`, `"BTC 100k"`, `"Ripple vs SEC"`
+
+**Fallback if any Clodds prediction-market tool returns help-text or no results:**
+```
+web_fetch https://polymarket.com/markets/crypto
+web_fetch https://kalshi.com/markets/crypto
+web_fetch https://manifold.markets/browse?topic=crypto
+web_fetch https://opinion.trade
+web_search "polymarket <TICKER> odds today"
+```
 
 ---
 

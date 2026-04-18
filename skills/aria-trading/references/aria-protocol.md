@@ -304,17 +304,38 @@ If three or more of the above cannot be filled even after the fallback chain, re
 
 **Tools:** `web_search "$[TICKER] crypto"` → `web_search "[token name] twitter pump.fun"` → `web_search "[token name] telegram"` → `web_fetch [project X page]` → `web_fetch opinion.trade` → `clodds_news [token]` → `clodds_feeds` → `clodds_opinion "[token] — buy or sell?"` → `clodds_edge "[token] — any asymmetric opportunity?"`
 
+**Prediction-market + AI-opinion chain (MANDATORY — run every call on every token analysis):**
+```
+clodds_polymarket_markets "<TICKER or project name>"
+  → for every hit: clodds_polymarket_orderbook <market_id>
+  → extract implied probability = bestBid_YES / 100 (or mid-market of best bid/ask)
+clodds_kalshi_markets "<TICKER or narrative>"
+  → for every hit: clodds_kalshi_orderbook <market_id>
+clodds_metaculus "<TICKER or narrative>"
+clodds_trading_manifold "<TICKER>"               (retail-weighted play-money forecasts)
+clodds_predictfun / clodds_predictit              (alt-data cross-check — optional; note if divergent)
+clodds_opinion "<TICKER> — buy or sell given current price $X, setup [pattern], 1h Δ ±Y%?"
+```
+If a Clodds prediction-market tool returns help-text or no results, fall back to `web_fetch polymarket.com/markets/crypto`, `web_fetch kalshi.com/markets/crypto`, or `web_fetch opinion.trade`.
+
 **MUST RENDER the standardized sentiment block — never skip, never collapse, never replace with prose.** This block is mandatory for every token analyzed:
 
 ```
-X/Twitter sentiment:  🟢 Bullish / 🟡 Neutral / 🔴 Bearish
-X post count (24h):   ~XX posts (estimate from web_search results)
-Community activity:   Active / Moderate / Dead
-KOL mentions:         Yes ([@handle, ~XXk followers]) / None
-Catalyst pipeline:    Yes ([describe, ETA]) / None
-Shill/manipulation:   Low / Medium / High
-Mainstream coverage:  Yes ([outlet, headline, date]) / None
+X/Twitter sentiment:   🟢 Bullish / 🟡 Neutral / 🔴 Bearish
+X post count (24h):    ~XX posts (estimate from web_search results)
+Community activity:    Active / Moderate / Dead
+KOL mentions:          Yes ([@handle, ~XXk followers]) / None
+Catalyst pipeline:     Yes ([describe, ETA]) / None
+Shill/manipulation:    Low / Medium / High
+Mainstream coverage:   Yes ([outlet, headline, date]) / None
+Prediction markets:    Polymarket: [N markets · top: "<question>" YES X% / NO Y%]
+                       Kalshi: [event + implied prob] / Metaculus: [forecast] / None
+Clodds AI opinion:     🟢 Bullish / 🟡 Neutral / 🔴 Bearish — "<one-line rationale from clodds_opinion>"
 ```
+
+**Rendering rules for the two new lines:**
+- **Prediction markets** — if no markets surface from any of polymarket / kalshi / metaculus / manifold for this token, render `None` across the board. Don't omit the line. If hits exist, show the top 1-2 by volume/participation with implied probability extracted from the orderbook.
+- **Clodds AI opinion** — always call `clodds_opinion` with the full context (price, pattern, 1h Δ). Extract bias from the response and render with a short one-liner quoting the core rationale. If the tool errors or returns nothing, render `⚠ clodds_opinion unavailable` — do not omit.
 
 **How to fill the block:**
 - **X post count:** run `web_search "$<TICKER> site:x.com"` and `web_search "[token name] site:x.com"`. Count distinct results from the last 24h. If under 10, mark as `LOW (~N posts)`; if 10–50 mark `MODERATE`; if >50 mark `ACTIVE`. State the count.
@@ -351,16 +372,26 @@ Macro snapshot — [DATE] [TIME UTC]
   BTC dominance:       XX.X%
                        ↳ prefer CoinGecko MCP (get_global);
                          fall back to web_fetch https://api.coingecko.com/api/v3/global
-  Polymarket events:   [top 1-2 active crypto markets + odds]
+  Polymarket events:   [N active crypto markets — top 3 by 24h vol]
+                       ① "<question>" — YES X% / NO Y% · 24h vol $Xk
+                       ② "<question>" — YES X% / NO Y% · 24h vol $Xk
+                       ③ "<question>" — YES X% / NO Y% · 24h vol $Xk
                        ↳ clodds_polymarket_markets "crypto"
+                       ↳ for each top market: clodds_polymarket_orderbook <id>
+                           — implied prob = bestBid_YES / 100 (or mid of bid/ask)
                        ↳ fallback if help-text returned:
                          web_fetch https://polymarket.com/markets/crypto
                          web_search "polymarket crypto odds today"
-  Kalshi macro:        [rate decisions / CPI / SEC / ETF events with date]
-                       ↳ clodds_kalshi_markets
+  Kalshi macro:        [top 2-3: rate decisions / CPI / SEC / ETF events with date + implied prob]
+                       ↳ clodds_kalshi_markets "crypto" + clodds_kalshi_orderbook on top hits
                        ↳ fallback if help-text returned:
                          web_fetch https://kalshi.com/markets/crypto
                          web_search "Kalshi crypto rate decision market today"
+  Metaculus forecasts: [community consensus on 2-3 relevant crypto/macro questions]
+                       ↳ clodds_metaculus "crypto" / clodds_metaculus "BTC" / clodds_metaculus "SOL"
+  Manifold / PredictIt / PredictFun:
+                       [alt-data cross-check — flag when divergent from Polymarket by >10pp]
+                       ↳ clodds_trading_manifold / clodds_predictit / clodds_predictfun
   Memecoin sector:     🔥 HOT / 🌤 WARM / 🌧 COOLING / 🥶 COLD  — [one-line reason]
   ETF flows:           [BTC/ETH ETF net flow last session, $M]
                        ↳ free source:
@@ -430,9 +461,9 @@ Using data from all prior phases + `clodds_opinion "[token] — buy or sell?"`:
 - **Volume (4):** 10 = ≥2× avg sustained 4h+ · 5 = normal · 0 = <0.5× fading
 - **On-chain (5):** 10 = top10 <20% + growing wallets · 5 = neutral · 0 = top10 >50% or shrinking
 - **Whale (6):** 10 = net accum >$50K/24h · 5 = mixed · 0 = net distrib >$50K/24h
-- **Social (7):** 10 = 🟢 + named KOL + active community · 5 = 🟡 · 0 = 🔴 or dead community
+- **Social (7):** 10 = 🟢 + named KOL + active community + Polymarket implied prob >55% bullish · 5 = 🟡 / mixed / no prediction-market data · 0 = 🔴 or dead community OR Polymarket implied prob <40% bullish
 - **Liquidity (8):** 10 = >$10M liq + <0.5% slip @ $1K · 5 = $1–10M · 0 = <$500K
-- **Narrative (9):** 10 = fresh narrative + organic growth · 5 = mature meme · 0 = exhausted/no narrative
+- **Narrative (9):** 10 = fresh narrative + organic growth + `clodds_opinion` returns bullish + catalyst pipeline · 5 = mature meme / mixed opinion · 0 = exhausted narrative / `clodds_opinion` bearish / no catalyst
 - **Macro (10):** 10 = SUPPORTS · 5 = NEUTRAL · 0 = OPPOSES (from Phase 6 verdict line)
 
 ---

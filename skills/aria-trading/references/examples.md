@@ -250,6 +250,23 @@ Use ARIA. Compare $XRP vs $ADA — which is the better commodity-framework bet t
 ```
 *Side-by-side 9-phase protocol → ranked recommendation.*
 
+### Prediction markets & AI opinion (Clodds-powered)
+
+```
+Use ARIA. What does Polymarket think about $BTC hitting $100K by year-end?
+```
+*Direct Polymarket query → `clodds_polymarket_markets "BTC 100K"` + orderbook on the top hit → extracts implied probability (bestBid_YES / 100) → reports market title, YES/NO odds, 24h volume, and participation depth. Cross-checks with Metaculus and Manifold if they have a matching question.*
+
+```
+Use ARIA. Get implied probability of SEC approving a SOL ETF from Kalshi and Polymarket.
+```
+*Runs `clodds_kalshi_markets "SOL ETF"` + `clodds_polymarket_markets "SOL ETF"` → reports both books' implied probs side-by-side → flags any >10pp divergence as a tradeable edge (smart-money vs retail disagreement).*
+
+```
+Use ARIA. Give me the clodds_opinion on $SOL right now — is it a buy?
+```
+*Calls `clodds_opinion "SOL — buy or sell given current price, setup, 1h Δ?"` with full live context → returns AI-synthesized bias (🟢/🟡/🔴) + one-line rationale. Useful as a quick second opinion before a full 9-phase analysis.*
+
 ---
 
 ## 9. Power-User / Testing Prompts

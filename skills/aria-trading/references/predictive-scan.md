@@ -35,6 +35,15 @@ Default N = 5 if the user doesn't specify.
 4. Clodds intelligence:
    clodds_edge "what's about to move next hour crypto"
    clodds_ai_strategy "short-term momentum setups right now"
+
+5. Prediction-market + opinion surface (cross-reference for catalyst signals):
+   clodds_polymarket_markets "crypto"
+   clodds_kalshi_markets "crypto"
+   clodds_metaculus "crypto"
+   clodds_trading_manifold "crypto"
+   → note any candidate token with a token-specific event market
+     (implied prob ≥ 60% bullish outcome = catalyst-bullish cross-reference)
+   → note divergences (Polymarket bullish but Manifold retail bearish = smart-money edge)
 ```
 
 Merge and deduplicate → raw candidate universe (typically 100–200 tokens).
@@ -76,7 +85,7 @@ Compute 9 factors. Weights are chosen so no single hot factor can carry the scor
 | 3 | Volume acceleration | 15 | 1h vol ≥ 1.5× of preceding-6h avg AND OBV rising (not just price) |
 | 4 | Whale net buy (1h) | 15 | Net USD from trades >$1K is positive AND ≥ $10K |
 | 5 | Momentum divergence | 10 | Bullish RSI divergence on 15m/1h (price made lower low, RSI made higher low) |
-| 6 | Narrative ignition | 10 | X post velocity last 1h ≥ 3× rolling-24h avg · OR fresh catalyst news in last 4h (listing, KOL pick, partnership, token-2.0) |
+| 6 | Narrative ignition | 10 | X post velocity last 1h ≥ 3× rolling-24h avg · OR fresh catalyst news in last 4h (listing, KOL pick, partnership, token-2.0) · OR fresh Polymarket/Kalshi/Metaculus market for this token w/ implied prob >60% bullish · OR `clodds_opinion` returns BUY-NOW on this token |
 | 7 | Social acceleration | 5 | Active community + ≥1 KOL mention (>100K followers) in last 24h |
 | 8 | Holder health | 5 | Top 10 <40% · mint/freeze renounced · creator hasn't sold >20% in last 7d |
 | 9 | Macro tailwind | 5 | BTC/SOL green on 1h · F&G rising vs yesterday's close |
