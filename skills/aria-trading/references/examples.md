@@ -322,7 +322,12 @@ Use ARIA. Show journal.
 ```
 Use ARIA. Status check.
 ```
-*For every open entry, pull current price (Binance klines for CEX, GeckoTerminal pool OHLCV for Solana), detect SL / TP1 / TP2 / TP3 hits, auto-update statuses, append a new status-check to each entry's history, and rewrite the journal. Renders a mark-to-market table highlighting 🔔 state transitions and summarizing win rate, unrealized PnL, and average R realized.*
+*For every open entry, pull current price (Binance klines for CEX, GeckoTerminal pool OHLCV for Solana), detect SL / TP1 / TP2 / TP3 hits, auto-update statuses, append a new status-check to each entry's history, and rewrite the journal. Renders a **time-series table** with columns per check date (Signal $ → Apr 17 → Apr 18 → … → Now → Δ → Status), so each row shows the price progression from signal creation through every prior check. 🔔 marks rows whose status changed this run. Up to 4 historical check columns; compresses to First + prior 2 + Now once >4 checks exist.*
+
+```
+Use ARIA. Status check — compact.
+```
+*Same command but renders the compact `Signal $ · Now · Δ · Status` format — useful when you have many open entries and want a narrow table.*
 
 ```
 Use ARIA. Journal stats.

@@ -188,11 +188,46 @@ Quick stats: Win rate <X>% · Avg winner +<X>% · Avg loser -<X>% · Open positi
    - Update entry's `status` field to new status if state changed.
 3. Also check expiry — if `now - created_at > horizon-specific threshold` (7d intraday / 14d swing / 30d position) and no trigger/TP/SL hit → status `EXPIRED`.
 4. Rewrite `reports/journal.jsonl` with the updated entries.
-5. Render the same Markdown table as Command 1, plus:
-   - Column `Now` — current fetched price
-   - Column `Δ` — % change from `price_at_signal`
-   - Column `R:R realized` — `(current - entry_mid) / (entry_mid - sl)` for open positions
-   - Highlight rows that transitioned state this run with a 🔔 emoji
+5. Render a **time-series table** — one row per entry, one column per historical check. This matches the user's mental model of a spreadsheet where each new check appears as a new column to the right of the same row.
+
+### Time-series rendering format (MANDATORY for Status-check output)
+
+For each entry, render a row with these columns in this order:
+
+```
+| Date      | Ticker | Venue     | Signal    | Entry       | SL    | TP1   | Signal $  | [MM-DD #1] | [MM-DD #2] | [MM-DD #3] | Now (YYYY-MM-DD HH:MM) | Δ from signal | Status   | 🔔 |
+```
+
+Column logic:
+- **Signal $** — `price_at_signal` (the price when the recommendation was created)
+- **Middle columns** — one column per historical `status_history` check, column header labeled with the check date (e.g. `Apr 18 14:20`). Show up to **4 most-recent historical checks** (excluding the one just added this run). If fewer than 4 checks exist, leave the empty columns blank. If more than 4 exist, show first-recorded check + last 3 (so the user sees the full progression without the row getting unreadably wide).
+- **Now** — the price fetched in THIS Status-check run, with the timestamp in the header
+- **Δ from signal** — `(Now - Signal $) / Signal $ × 100%`
+- **Status** — current status (may have just transitioned this run)
+- **🔔** — emoji column, filled only on rows where status changed THIS run
+
+Example row (entry created 2026-04-17, checked on 04-17, 04-18, 04-19, and now 04-20):
+```
+| Date              | Ticker | Venue    | Signal     | Entry       | SL    | TP1   | Signal $ | Apr 17 18:30 | Apr 18 09:15 | Apr 19 11:40 | Now (2026-04-20 14:20) | Δ     | Status       | 🔔 |
+| [2026-04-17](...) | $YN    | PumpSwap | BUY-WATCH  | 0.068-0.072 | 0.062 | 0.080 | $0.0788  | $0.0788      | $0.0812      | $0.0775      | $0.0831                | +5.5% | IN_POSITION  | 🔔 |
+```
+
+If this is the FIRST Status check on a set of entries (no prior history), render only: `Signal $ | Now | Δ | Status` — no middle check columns yet.
+
+### Data-density guard
+
+If any entry has >4 historical checks, compress to `First · 2nd-latest · Latest-1 · Now` (4 columns max). Never render more than 4 historical columns even if 20 checks exist — the journal file still contains the full history; the rendering is just the summary.
+
+### Alternative compact mode
+
+If the table is being rendered for a large number of entries (>15 rows), or the user explicitly asks for `Use ARIA. Status check — compact.`, fall back to the single-`Now` rendering:
+- Columns: `Signal $ | Now | Δ | Status | 🔔`
+- This is the original Command 1 "Show journal" format augmented with Δ and Status transitions
+
+### R:R realized (optional trailing column on wins/losses only)
+
+For entries in WINS / LOSSES groups, add a `R realized` column:
+`(exit_price - entry_mid) / (entry_mid - sl)` where `exit_price` is the price at the state transition (TP hit or SL hit).
 
 **Rate-limiting:** If >20 OPEN entries exist, batch fetches in parallel but space Binance/GeckoTerminal calls to avoid 429s. Tag any fetch failures with ⚠ and keep the previous price/status.
 
