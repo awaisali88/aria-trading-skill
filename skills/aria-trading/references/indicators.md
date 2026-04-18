@@ -10,7 +10,10 @@ Load this file during Phase 3 for every market/token analysis. For each indicato
 
 ## Input data format
 
-**Binance klines** (`web_fetch https://api.binance.com/api/v3/klines?symbol=<SYM>USDT&interval=<tf>&limit=200`)
+**Binance klines** — follow the Binance data-source preference chain in `tool-inventory.md`:
+1. **Preferred**: Binance MCP `get_klines` / `klines` with `symbol=<SYM>USDT`, `interval=<tf>`, `limit=200`
+2. **Fallback**: `web_fetch https://api.binance.com/api/v3/klines?symbol=<SYM>USDT&interval=<tf>&limit=200`
+
 Array of candles, each candle is:
 ```
 [openTime, open, high, low, close, volume, closeTime, quoteVolume, trades, takerBuyBase, takerBuyQuote, _]

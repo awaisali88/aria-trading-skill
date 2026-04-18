@@ -27,7 +27,9 @@ Default N = 5 if the user doesn't specify.
 
 3. CEX surface (for BTC/alt momentum):
    clodds_signals                     → live breakout/reversal signals
-   web_fetch https://api.binance.com/api/v3/ticker/24hr
+   Binance 24hr ticker sweep (prefer MCP, fall back to REST — see tool-inventory.md):
+     1. Preferred: Binance MCP get_24hr_ticker / get_ticker_24hr (returns all symbols)
+     2. Fallback: web_fetch https://api.binance.com/api/v3/ticker/24hr
      → sort by priceChangePercent, take top 30 and bottom 30 (reversal candidates)
 
 4. Clodds intelligence:

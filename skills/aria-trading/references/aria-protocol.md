@@ -62,7 +62,7 @@ Phase 8 trade plan SUPPRESSED. Educational analysis continues below.
   1. web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info
      → returns price_change_percentage for m5 / h1 / h6 / h24
   2. For 7d on any token (CEX or DEX), pull daily klines and compute:
-     CEX: web_fetch https://api.binance.com/api/v3/klines?symbol=<SYM>USDT&interval=1d&limit=8
+     CEX: prefer Binance MCP `get_klines` (tier 1 per tool-inventory.md Data-source preference order); fallback `web_fetch https://api.binance.com/api/v3/klines?symbol=<SYM>USDT&interval=1d&limit=8`
      DEX: web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/day?aggregate=1&limit=8
      7d Δ = (close[latest] - close[7 days ago]) / close[7 days ago] × 100
   3. Only if the token is <7 days old AND daily klines return <7 bars, label 7d as "n/a (token <7d old)" — never say "n/a from this snapshot" without attempting the klines fallback.
@@ -102,7 +102,10 @@ For CEX assets, use the corresponding Binance klines URLs at `interval=1m` and `
 ### Data sources per asset class
 
 **CEX-listed tokens (Binance / Bybit / MEXC — e.g. SOL, XRP, TAO, BTC, ETH):**
-Primary source is Binance's public klines endpoint (no auth required). Fetch each interval with `web_fetch`:
+
+Follow the Binance data-source preference order in `tool-inventory.md`:
+1. **Preferred — Binance MCP** (tool matching `mcp__*binance*__*` with a klines-type function such as `get_klines` / `klines`). Call it five times, one per interval `1m`, `5m`, `15m`, `1h`, `4h`, `limit=200`.
+2. **Fallback — web_fetch public REST** (no auth). Use these URLs if no Binance MCP tool is available or it errored:
 ```
 https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=1m&limit=200
 https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=5m&limit=200
@@ -110,7 +113,7 @@ https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=15m&limit=200
 https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=1h&limit=200
 https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=4h&limit=200
 ```
-Each response is an array of `[openTime, open, high, low, close, volume, closeTime, quoteVolume, trades, takerBuyBase, takerBuyQuote, ignore]`. Calculate RSI, MACD, EMA, BB, VWAP, ATR from these arrays directly.
+Response shape is identical either way: array of `[openTime, open, high, low, close, volume, closeTime, quoteVolume, trades, takerBuyBase, takerBuyQuote, ignore]`. Calculate RSI, MACD, EMA, BB, VWAP, ATR from these arrays directly.
 
 Supplement with `clodds_binance_spot_history <SYMBOL>USDT` for the most recent live trade tape (bid/ask imbalance).
 
@@ -147,7 +150,7 @@ Supplement with `clodds_binance_spot_history <SYMBOL>USDT` for the most recent l
    - `https://solscan.io/token/<mint>` — on-chain activity
    - `https://pump.fun/coin/<mint>` — only for pump.fun-origin tokens
 
-**Last-resort fallback if GeckoTerminal also fails:** `web_fetch https://api.coingecko.com/api/v3/coins/<coin-id>/ohlc?vs_currency=usd&days=1` (≤1d returns 30m candles) and `...&days=7` (7d returns 4h candles). CoinGecko has no 1m/5m granularity, so day-trading precision degrades — flag this to the user if it happens.
+**Last-resort fallback if GeckoTerminal also fails:** follow the CoinGecko preference chain in `tool-inventory.md` — prefer CoinGecko MCP `get_coin_ohlc` (tier 1); fall back to `web_fetch https://api.coingecko.com/api/v3/coins/<coin-id>/ohlc?vs_currency=usd&days=1` (≤1d returns 30m candles) and `...&days=7` (7d returns 4h candles). CoinGecko has no 1m/5m granularity, so day-trading precision degrades — flag this to the user if it happens.
 
 ### Per-timeframe block (run this full block for each of 1m, 5m, 15m, 1h, 4h)
 
@@ -338,11 +341,16 @@ Macro snapshot — [DATE] [TIME UTC]
   Fear & Greed:        XX (Extreme Fear / Fear / Neutral / Greed / Extreme Greed)
                        ↳ web_fetch https://api.alternative.me/fng/?limit=1
   BTC:                 $XX,XXX  · 24h: ±X.X%  · 7d: ±X.X%
-                       ↳ clodds_binance_spot_price BTCUSDT + klines interval=1d limit=8
+                       ↳ prefer Binance MCP (get_ticker_24hr + get_klines interval=1d limit=8);
+                         fall back to clodds_binance_spot_price BTCUSDT and/or
+                         web_fetch https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=8
   SOL:                 $XXX     · 24h: ±X.X%  · 7d: ±X.X%
-                       ↳ same with SOLUSDT (CRITICAL for Solana memecoin trades)
+                       ↳ same preference chain with SOLUSDT (CRITICAL for Solana memecoin trades)
   ETH:                 $X,XXX   · 24h: ±X.X%  · 7d: ±X.X%
+                       ↳ same preference chain with ETHUSDT
   BTC dominance:       XX.X%
+                       ↳ prefer CoinGecko MCP (get_global);
+                         fall back to web_fetch https://api.coingecko.com/api/v3/global
   Polymarket events:   [top 1-2 active crypto markets + odds]
                        ↳ clodds_polymarket_markets "crypto"
                        ↳ fallback if help-text returned:

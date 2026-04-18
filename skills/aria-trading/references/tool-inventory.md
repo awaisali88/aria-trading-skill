@@ -226,9 +226,32 @@ https://pump.fun/coin/[mint]
 https://opinion.trade
 ```
 
+## Data-source preference order (Binance + CoinGecko)
+
+For **any Binance call** (klines, ticker, price, 24hr stats) and **any CoinGecko call** (global data, OHLC, market data, simple price), follow this preference chain. Check the current session's available tool list before choosing:
+
+### Binance
+1. **Preferred — Binance MCP** (any tool matching `mcp__*binance*__*` that the user has connected locally). Common function names to look for: `get_klines`, `klines`, `get_ticker`, `get_24hr_ticker`, `get_price`, `get_symbol_price_ticker`, `get_ticker_24hr`, `get_symbol_ticker`. Use whichever the installed server exposes.
+2. **Fallback A — Clodds** `clodds_binance_spot_price` for simple price queries (Clodds does not expose klines, so klines skip this tier).
+3. **Fallback B — `web_fetch` public REST** `https://api.binance.com/api/v3/...` (no auth). Only used if tiers 1 and 2 are unavailable or errored.
+
+### CoinGecko
+1. **Preferred — CoinGecko MCP** (any tool matching `mcp__*coingecko*__*`). Common function names: `get_coin_data`, `get_coin_ohlc`, `get_global`, `get_simple_price`, `get_coin_market_chart`, `get_coins_markets`. Use whichever the installed server exposes.
+2. **Fallback — `web_fetch` public REST** `https://api.coingecko.com/api/v3/...` (no auth). Only used if tier 1 is unavailable or errored.
+
+### Detection and fallback rule
+
+- **If a matching MCP tool IS in the available tool list** → attempt the MCP call first. On error (timeout, auth, rate limit, unexpected shape), fall back to the next tier and note the degradation to the user in the Tool-call audit section at the end of the report.
+- **If no matching MCP tool is in the list** → skip directly to the web_fetch tier. Do not try ToolSearch for a Binance/CoinGecko MCP inside a single analysis run — that's configuration, not runtime fallback.
+- **Never dual-call** — don't hit both the MCP and the REST API for the same data. Pick one tier, use it, move on.
+
+All URLs listed below in this file remain valid as the web_fetch fallback tier.
+
+---
+
 **Multi-timeframe OHLCV — primary data sources (all free, no auth):**
 
-1. **CEX-listed tokens (Binance public klines):**
+1. **CEX-listed tokens (Binance):** prefer Binance MCP `get_klines` / `klines` (tier 1 per preference chain above); fall back to the public REST endpoint:
 ```
 https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=1m&limit=200
 https://api.binance.com/api/v3/klines?symbol=[SYMBOL]USDT&interval=5m&limit=200
