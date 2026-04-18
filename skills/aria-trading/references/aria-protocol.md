@@ -561,3 +561,20 @@ Top next-action (if you can only do one thing today):
 4. **HOLD lines must come from `clodds_bags`** — if the user holds a token mentioned elsewhere in the report, convert the Signal Block's TP/SL into sell-at-price instructions for the existing position. If they don't hold a token, it belongs in BUY/SKIP, not HOLD.
 5. **SELL NOW is reserved for hard exits** — rug flag, trend-broken with SL hit, catalyst confirmed failed. Don't use it for "take some profit" (that goes in HOLD).
 6. **Top next-action is the single most-decisive line** — the user will re-read this tomorrow morning. Make it unambiguous.
+
+### Final step — auto-append to the journal
+
+**After the Action Summary block is rendered, ALWAYS append new entries to `reports/journal.jsonl`** following the schema in `references/journal-system.md`. One entry per actionable line:
+
+| Action Summary line | Journal signal | Initial status |
+|---|---|---|
+| 🟢 BUY NOW (no trigger) | `BUY-NOW` | `OPEN` |
+| 🟢 BUY with trigger condition | `BUY-WATCH` | `ENTRY_NOT_TRIGGERED` |
+| 🟡 HOLD (existing position) | `HOLD` | `IN_POSITION` |
+| 🔴 SELL NOW | `SELL-NOW` | `CLOSED_MANUAL` (and also flip any prior OPEN entry for that token to `CLOSED_MANUAL`) |
+| ⚪ SKIP (composite ≥ 50) | `SKIP` | `EXPIRED` |
+| ⚪ SKIP (composite < 50) | do not append |
+
+**Deduplication rule:** Before appending, check `journal.jsonl` for an entry matching `(token + YYYYMMDD + signal)`. If found, **update** that row (bump `created_at`, replace `entry_zone` / `sl` / `tp1` / `tp2` / `tp3` / `trailing_pct` / `source_report`) instead of writing a duplicate line.
+
+**Never skip this step.** The journal is how the user measures ARIA's real-world performance over time. Missing entries break the downstream `Status check` and `Journal stats` commands. Every report's appends must complete successfully before delivering the report.

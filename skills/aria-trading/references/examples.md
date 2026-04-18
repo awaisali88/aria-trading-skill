@@ -310,19 +310,52 @@ Use ARIA. Action summary only — what should I buy, sell, or hold right now bas
 
 ---
 
+## 11. Journal & Performance Tracking
+
+Every report ARIA produces auto-appends its recommendations to `reports/journal.jsonl` — a persistent log of every BUY/HOLD/SELL/SKIP signal with date, entry, SL, TP, and a link back to the source report. These three commands let you review, refresh, and analyze that history.
+
+```
+Use ARIA. Show journal.
+```
+*Read `reports/journal.jsonl`, render a Markdown table grouped by status (🟢 Open · ✅ Wins · ❌ Losses · ⏳ Expired), sorted newest-first. Date column is a clickable link to the source report — click to open the `.md` file. No external calls; just displays what's been logged.*
+
+```
+Use ARIA. Status check.
+```
+*For every open entry, pull current price (Binance klines for CEX, GeckoTerminal pool OHLCV for Solana), detect SL / TP1 / TP2 / TP3 hits, auto-update statuses, append a new status-check to each entry's history, and rewrite the journal. Renders a mark-to-market table highlighting 🔔 state transitions and summarizing win rate, unrealized PnL, and average R realized.*
+
+```
+Use ARIA. Journal stats.
+```
+*Aggregated performance dashboard — overall win rate, average winner/loser %, expectancy per trade, best/worst pick, avg hold time, and breakdowns by venue (pump.fun / Raydium / Binance / etc.), signal type (BUY-NOW vs BUY-WATCH), and conviction (HIGH vs MEDIUM vs LOW — testing whether conviction correlates with outperformance). Also shows 30-day trend vs all-time.*
+
+```
+Use ARIA. Show my journal for pump.fun only.
+```
+*Filtered view — only entries where `venue` matches the filter. Works with any venue, ticker, signal type, or date range.*
+
+```
+Use ARIA. How did my last 5 picks do?
+```
+*Narrow status-check on the most recent 5 entries only — useful when you don't want to refresh 50+ entries at once.*
+
+---
+
 ## Quick-reference — minimum viable prompts
 
-For every session, these 10 one-liners cover 80% of use cases:
+For every session, these 12 one-liners cover 85% of use cases:
 
 1. `Use ARIA. Scan the market.`
-2. `Use ARIA. Analyze $[TICKER].`
-3. `Use ARIA. Is $[TICKER] a buy?`
+2. `Use ARIA. Find me top 5 about to go up next hour.` ← predictive scanner
+3. `Use ARIA. Analyze $[TICKER].`
 4. `Use ARIA. Multi-TF chart read on $[TICKER].`
 5. `Use ARIA. What's my portfolio?`
 6. `Use ARIA. Check my alerts.`
 7. `Use ARIA. Buy $[AMOUNT] of $[TICKER] on [VENUE].`
 8. `Use ARIA. Close my $[TICKER] position.`
 9. `Use ARIA. Macro check.`
-10. `Use ARIA. Show me examples.`
+10. `Use ARIA. Show journal.` ← review past picks
+11. `Use ARIA. Status check.` ← refresh performance on open picks
+12. `Use ARIA. Show me examples.`
 
 When in doubt, start with `Use ARIA.` + a plain-English description of what you want. The skill's Standard Invocations table in `SKILL.md` maps most phrasings to the right protocol path.
