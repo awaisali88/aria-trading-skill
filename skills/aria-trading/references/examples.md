@@ -8,10 +8,12 @@ Every example starts with `Use ARIA.` to guarantee skill activation on Claude Co
 
 ## 1. Market Scanning — find something to trade
 
+### 1a. Backward-looking (what's moving NOW)
+
 ```
 Use ARIA. Scan the market and give me the top 3 buys for my balance today.
 ```
-*Runs `clodds_market_index` + pumpfun trending/hot/gainers + `clodds_signals` + `web_search` → ranks top 3 with full ARIA scores.*
+*Runs `clodds_market_index` + pumpfun trending/hot/gainers + `clodds_signals` + `web_search` → ranks top 3 with full ARIA scores. Shows what's already moving.*
 
 ```
 Use ARIA. What are the hottest pump.fun plays right now?
@@ -23,10 +25,37 @@ Use ARIA. Any signals today?
 ```
 *`clodds_signals` + market index + `clodds_edge` + `web_search` → live opportunity list.*
 
+### 1b. Forward-looking predictive scanner (what's ABOUT to move)
+
 ```
-Use ARIA. Find me asymmetric setups — small cap, high R:R, explain the edge.
+Use ARIA. Find me top 5 coins about to go up in the next hour.
 ```
-*Heavy `clodds_edge` + `clodds_opinion` + `web_search` — asymmetric-bet bias.*
+*Loads `references/predictive-scan.md` → sweeps 100+ candidates → pre-filters by liquidity/freshness/safety → scores each on the 9-factor Pre-Pump Signal (technical setup, multi-TF confluence, volume acceleration, whale net buy, divergence, narrative ignition, social acceleration, holder health, macro) → ranks top N → emits condensed per-token block with 1h + 2-4h targets + entry + SL + size → Phase 10 Action Summary.*
+
+```
+Use ARIA. Pre-pump scan — top 10 setups.
+```
+*Same pipeline, N=10 instead of default 5.*
+
+```
+Use ARIA. What's about to pump?
+```
+*Same pipeline, default N=5.*
+
+```
+Use ARIA. Pre-pump top 3 on Solana only.
+```
+*Restrict candidate universe to Solana DEX (pump.fun + GeckoTerminal trending pools). Skip CEX surface.*
+
+```
+Use ARIA. Pre-pump top 5 on Binance only.
+```
+*Restrict candidate universe to Binance-listed tokens (clodds_signals + Binance 24hr ticker top gainers/losers). Skip Solana DEX surface.*
+
+```
+Use ARIA. Rescan.
+```
+*Re-runs the predictive scanner and compares to the most recent prior scan file in `reports/pre-pump-scan-*.md`. Renders a **Δ block** at the top showing which tokens entered/left the top N, which are gaining/losing score, and which are stable. Recommended cadence: every 20-30 minutes during active hours.*
 
 ---
 

@@ -55,6 +55,7 @@ For detailed reference material, load the relevant file from `references/` as ne
 - Trade execution formats, SL/TP rules → `references/trade-execution.md`
 - **Copy-paste example prompts → `references/examples.md` (load whenever the user asks for examples / prompts / usage help / "what can you do")**
 - **Report compliance checklist → `references/report-checklist.md` (load before delivering any analysis report — walk every item)**
+- **Forward-looking predictive scanner → `references/predictive-scan.md` (load when the user asks for "top N about to go up", "pre-pump scan", "what's about to pump", "hunt for next-hour movers", or "rescan")**
 
 ---
 
@@ -183,7 +184,8 @@ Load `references/event-system.md`. Pull `clodds_monitoring` + `clodds_alerts` + 
 
 | User says | ARIA does |
 |-----------|-----------|
-| "Scan the market" | `clodds_market_index` + pumpfun trending/hot/gainers/graduating + `clodds_signals` + `web_search` → top 3 opportunities |
+| "Scan the market" | `clodds_market_index` + pumpfun trending/hot/gainers/graduating + `clodds_signals` + `web_search` → top 3 opportunities (backward-looking — what's moving NOW) |
+| "Top N about to go up" / "pre-pump scan" / "what's about to pump" / "predictive scan" / "hunt for next-hour movers" / "rescan" | Load `references/predictive-scan.md` → run the 6-step Pre-Pump Signal pipeline: build 100+ candidate universe → filter gates → score each on 9-factor Pre-Pump Signal (technical setup, multi-TF confluence, volume acceleration, whale net buy, divergence, narrative ignition, social, holder, macro) → rank top N → emit condensed per-token block + tail + Phase 10 Action Summary. Forward-looking — ranks setups, not already-happened moves. Saves to `reports/pre-pump-scan-YYYY-MM-DD-HHMM.md` so the next rescan produces a delta block. |
 | "Analyze [token]" | Full 9-phase ARIA Protocol |
 | "Is [token] a buy?" | Full ARIA Protocol → YES / NO / WAIT |
 | "Any signals?" | `clodds_signals` + market_index + pumpfun hot + `clodds_edge` + `web_search` |
