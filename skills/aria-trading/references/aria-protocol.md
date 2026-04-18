@@ -57,7 +57,16 @@ Phase 8 trade plan SUPPRESSED. Educational analysis continues below.
 **Tools:** `clodds_pumpfun stats <mint>` → `clodds_pumpfun bonding <mint>` → `clodds_pumpfun trades <mint>` → `clodds_binance_spot_price` (if CEX-listed) → `clodds_jupiter_quote` (slippage) → `web_fetch dexscreener.com/solana/<mint>`
 
 **MUST INCLUDE for every token (every item — skipping any one fails the report):**
-- **Price changes — all five intervals:** 5m / 1h / 6h / 24h / 7d. If `clodds_pumpfun stats` is missing any interval, fall back to `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info` (returns `price_change_percentage` for `m5`, `h1`, `h6`, `h24`).
+- **Price changes — all five intervals:** 5m / 1h / 6h / 24h / 7d. Fallback chain if any interval is missing from the primary source:
+  ```
+  1. web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info
+     → returns price_change_percentage for m5 / h1 / h6 / h24
+  2. For 7d on any token (CEX or DEX), pull daily klines and compute:
+     CEX: web_fetch https://api.binance.com/api/v3/klines?symbol=<SYM>USDT&interval=1d&limit=8
+     DEX: web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/day?aggregate=1&limit=8
+     7d Δ = (close[latest] - close[7 days ago]) / close[7 days ago] × 100
+  3. Only if the token is <7 days old AND daily klines return <7 bars, label 7d as "n/a (token <7d old)" — never say "n/a from this snapshot" without attempting the klines fallback.
+  ```
 - **Volume:** 1h and 24h, with vol/mcap ratio. Flag >100% as suspicious, >50% as high activity.
 - **Buy/sell tx split (last 1h):** count buys vs sells. Pull from `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/trades?limit=100` and count by `kind` field. Report as `Buys: N (X%) · Sells: N (X%)`.
 - **Liquidity** (USD), **MCap**, **FDV**, and circulating-supply ratio.
@@ -268,11 +277,13 @@ If any of the six fails, mark the setup "WAITING" and tell the user what needs t
   web_fetch https://solscan.io/token/<mint>#holders                                    → top 10 list
   web_fetch https://birdeye.so/token/<mint>?chain=solana                               → holder distribution
   ```
-- **Creator wallet status — has creator sold? What % remains?** Fallback:
+- **Creator wallet status — has creator sold? What % remains?** **MANDATORY fetch — do not mark UNKNOWN without running it:**
   ```
-  web_fetch https://solscan.io/account/<creator_wallet>                                → wallet holdings + tx history
+  1. web_fetch https://solscan.io/account/<creator_wallet>                             → wallet holdings + tx history
+  2. If solscan 403s or renders empty: web_fetch https://api.solscan.io/account/tokens?account=<creator_wallet>
+  3. If both fail: web_fetch https://gmgn.ai/sol/address/<creator_wallet>              → GMGN profiler often mirrors creator data
   ```
-  Report as `Creator holds X% of supply, last sell N days ago` or `Creator fully exited`.
+  Report as `Creator holds X% of supply, last sell N days ago` or `Creator fully exited N days ago`. Only mark `UNKNOWN` if all three fallbacks fail — and in that case, state which URLs were tried in the PARTIAL banner.
 - **Whale direction (last 24h): net accumulation vs distribution.** Fallback:
   ```
   web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/trades?limit=100
@@ -334,10 +345,20 @@ Macro snapshot — [DATE] [TIME UTC]
   BTC dominance:       XX.X%
   Polymarket events:   [top 1-2 active crypto markets + odds]
                        ↳ clodds_polymarket_markets "crypto"
+                       ↳ fallback if help-text returned:
+                         web_fetch https://polymarket.com/markets/crypto
+                         web_search "polymarket crypto odds today"
   Kalshi macro:        [rate decisions / CPI / SEC / ETF events with date]
                        ↳ clodds_kalshi_markets
+                       ↳ fallback if help-text returned:
+                         web_fetch https://kalshi.com/markets/crypto
+                         web_search "Kalshi crypto rate decision market today"
   Memecoin sector:     🔥 HOT / 🌤 WARM / 🌧 COOLING / 🥶 COLD  — [one-line reason]
   ETF flows:           [BTC/ETH ETF net flow last session, $M]
+                       ↳ free source:
+                         web_fetch https://farside.co.uk/bitcoin-etf-flow-all-data/
+                         web_fetch https://farside.co.uk/ethereum-etf-flow-all-data/
+                         web_search "BTC spot ETF net flow today" if farside blocks
   Macro verdict:       SUPPORTS / NEUTRAL / OPPOSES the trade direction
 ```
 
@@ -467,3 +488,76 @@ Immediately after every trade:
 ```
 
 For analyses where no trade is executed (recommendation only), still render the proposed alert lines using the same `[Tier X]` labels — that way the user can see exactly what would be wired on a "go".
+
+---
+
+## PHASE 10: ACTION SUMMARY (MANDATORY closing block for every report)
+
+Every report — single-token or multi-token — must end with this actionable summary block. This is the tl;dr the user reads first. It must be grounded in the **real wallet balances** pulled in Phase 8, not hypothetical framings.
+
+**Pull all balances before rendering:**
+```
+clodds_solana_balance                    → SOL + SPL token balances
+clodds_binance_spot_balance              → USDT + all spot holdings on Binance
+clodds_bybit_spot_balance                → same for Bybit (if user trades there)
+clodds_mexc_spot_balance                 → same for MEXC
+clodds_hyperliquid_balance               → Hyperliquid perps account
+clodds_portfolio_positions               → all open positions across venues
+clodds_bags                              → held tokens with entry price + unrealized PnL
+```
+
+**Render this exact block at the very end of the report, before the Disclaimer:**
+
+```
+═══════════════════════════════════════════════════════════════
+📋 ACTION SUMMARY — [DATE] [TIME UTC]
+═══════════════════════════════════════════════════════════════
+
+Wallet snapshot (live, from clodds_*_balance):
+  Solana:      X.XX SOL (~$X)   · N SPL positions
+  Binance:     $X,XXX USDT      · N spot positions
+  Bybit:       $X,XXX USDT      · N positions          (omit row if 0)
+  MEXC:        $X,XXX USDT      · N positions          (omit row if 0)
+  Hyperliquid: $X,XXX           · N perps              (omit row if 0)
+  ─────────────────────────────────────────────────
+  Deployable:  $X,XXX total                            ← ready for new trades
+
+🟢 BUY / ADD  (ordered by conviction, highest first):
+  ① BUY $[PAIR] on [VENUE] — [X.X SOL / $XXX] on [dip $X-$X / break >$X]
+     SL $X · TP1 $X (+X%) · TP2 $X (+X%) · TP3 $X (+X%) trail X%
+  ② BUY $[PAIR] on [VENUE] — [size] on [trigger]
+     SL $X · TP1 $X · TP2 $X · TP3 $X trail X%
+  (list up to 5; omit section entirely if no buyable setups)
+
+🟡 HOLD — sell at targets  (positions you already hold, per clodds_bags):
+  • $[TICKER] (held X units @ $Y.YY avg on [VENUE], unrealized +/-X%):
+    — sell 30% at $X (TP1, +X% from avg)
+    — sell 40% at $X (TP2, +X%)
+    — trail final 30% at X% below peak, activate at $X (TP3)
+    — SL moved to $X (breakeven / trailing invalidation)
+  (list every current holding that appeared in the report)
+
+🔴 SELL NOW  (thesis broken — exit regardless of price):
+  • SELL 100% of $[TICKER] on [VENUE] — [one-line reason: rug flag / trend broken / catalyst failed]
+  (omit section entirely if nothing to sell)
+
+⚪ SKIP / AVOID  (tokens scanned but not deployed):
+  • $[TICKER] — composite X/100 — [one-line reason]
+
+Deployment plan:
+  Deploying:   X.X SOL / $X,XXX   (XX% of deployable)
+  Reserve:     X.X SOL / $X,XXX   (XX% dry powder)
+  Aggregate portfolio risk if every SL fires: X.XX%
+
+Top next-action (if you can only do one thing today):
+  → [one crisp line — the single highest-conviction action]
+═══════════════════════════════════════════════════════════════
+```
+
+**Rules for the Action Summary:**
+1. **Always render.** Even if balance is 0 (BALANCE EMPTY banner from Phase 8), still render the block with zero-balance rows and recommend sizing as % of future-deployed capital.
+2. **Real numbers only.** Every SOL/USDT number must come from a real `clodds_*_balance` call. Hypothetical framings ("at 10-SOL bag") are a failure for this section.
+3. **BUY lines must name the venue explicitly** — `on pump.fun` / `on Raydium` / `on Binance spot` / `on Hyperliquid perps`. The user needs to know where to click.
+4. **HOLD lines must come from `clodds_bags`** — if the user holds a token mentioned elsewhere in the report, convert the Signal Block's TP/SL into sell-at-price instructions for the existing position. If they don't hold a token, it belongs in BUY/SKIP, not HOLD.
+5. **SELL NOW is reserved for hard exits** — rug flag, trend-broken with SL hit, catalyst confirmed failed. Don't use it for "take some profit" (that goes in HOLD).
+6. **Top next-action is the single most-decisive line** — the user will re-read this tomorrow morning. Make it unambiguous.

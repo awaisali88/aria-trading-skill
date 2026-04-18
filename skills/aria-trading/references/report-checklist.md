@@ -19,6 +19,7 @@ This file is the structural fix for multi-token reports — it stops the model f
 
 ### Phase 2 — Live Market Snapshot
 - [ ] Price changes: 5m / 1h / 6h / 24h / 7d (all five intervals)
+- [ ] 7d Δ fallback attempted (Binance klines OR GeckoTerminal daily OHLCV) before labeling n/a
 - [ ] MCap, FDV, liquidity (USD), vol/mcap ratio
 - [ ] 1h volume + 24h volume (separate)
 - [ ] Buy/sell tx split for last 1h (from GeckoTerminal trades endpoint)
@@ -40,12 +41,12 @@ This file is the structural fix for multi-token reports — it stops the model f
 
 ### Phase 4 — On-Chain Intelligence
 - [ ] Top 10 holder concentration % (with >40% flag if applicable)
-- [ ] Creator wallet status (% remaining + last sell date)
+- [ ] Creator wallet status (% remaining + last sell date) — solscan fallback MUST be attempted before marking UNKNOWN
 - [ ] Whale direction last 24h (net accumulation $ vs distribution $)
 - [ ] LP lock confirmation
 - [ ] Price-vs-OBV divergence read
 - [ ] On-chain health (active wallets trend)
-- [ ] PARTIAL banner if 3+ items couldn't be filled
+- [ ] PARTIAL banner if 3+ items couldn't be filled — must name which URLs were attempted
 
 ### Phase 5 — Social & Sentiment
 - [ ] Standardized 7-line sentiment block rendered
@@ -83,10 +84,18 @@ This file is the structural fix for multi-token reports — it stops the model f
 
 ## Once per report (regardless of token count)
 
-- [ ] Phase 6 macro block at top (fear/greed value, BTC+SOL 24h+7d, prediction markets, sector temp, macro verdict)
-- [ ] Tool-call audit table (which tools succeeded / failed / were substituted) — at the bottom
-- [ ] Final ranking + portfolio allocation table grounded in the real balance from Phase 8
-- [ ] Disclaimer line at the end
+- [ ] Phase 6 macro block at top (fear/greed value, BTC+SOL+ETH 24h+7d, BTC dominance, Polymarket/Kalshi — fallback via web_fetch polymarket.com / kalshi.com or web_search if MCP returns help-text — ETF flows via farside.co.uk, sector temp, macro verdict)
+- [ ] Tool-call audit table (which tools succeeded / failed / were substituted) — before the Action Summary
+- [ ] **Phase 10 ACTION SUMMARY block at the end** — mandatory closing block:
+  - [ ] Wallet snapshot with live rows from `clodds_solana_balance` + every CEX `_spot_balance` the user is connected to
+  - [ ] 🟢 BUY / ADD list with venue named per line (pump.fun / Raydium / Binance spot / Hyperliquid / etc.)
+  - [ ] 🟡 HOLD list grounded in `clodds_bags` — sell-at-price instructions for every existing holding
+  - [ ] 🔴 SELL NOW list (or "(none)" if no hard exits)
+  - [ ] ⚪ SKIP / AVOID list (tokens scanned but not deployed, with composite score)
+  - [ ] Deployment totals + reserve %
+  - [ ] Aggregate portfolio risk if every SL fires
+  - [ ] "Top next-action" one-liner
+- [ ] Disclaimer line at the very end
 
 ---
 

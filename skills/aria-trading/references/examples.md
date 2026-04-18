@@ -274,6 +274,11 @@ Use ARIA. Run the compliance checklist on this report: [path or paste content].
 ```
 *Same as above but for an arbitrary report — useful for grading historical analyses or comparing two reports.*
 
+```
+Use ARIA. Action summary only — what should I buy, sell, or hold right now based on my live balances?
+```
+*Skip the per-token 9-phase walk and go straight to Phase 10. Pulls live balances from every connected venue (Solana + Binance + Bybit + MEXC + Hyperliquid), cross-references existing positions in `clodds_bags`, and renders only the Action Summary block — BUY/HOLD/SELL/SKIP with venue + size + price targets + Top next-action. Best for quick daily check-ins.*
+
 ---
 
 ## Quick-reference — minimum viable prompts
