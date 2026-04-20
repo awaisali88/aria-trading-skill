@@ -1,0 +1,348 @@
+{
+  "report_metadata": {
+    "scan_id": "pre-pump-scan-2026-04-18-1000",
+    "generated_at": "2026-04-18T10:00:00Z",
+    "horizon": "1-24h intraday day-trading",
+    "mode": "predictive_forward_looking",
+    "universe_surfaces": [
+      "binance_usdt_spot",
+      "solana_dex_geckoterminal",
+      "pumpfun_trending_hot_gainers"
+    ],
+    "prior_scan_compared": "pre-pump-scan-2026-04-18-0100.md",
+    "source_report": "reports/pre-pump-scan-2026-04-18-1000.md"
+  },
+
+  "wallet_snapshot": {
+    "solana": {
+      "address": "GwwcVEb7GVXxTHviHr8a8pWDXWH5xjtG5GveLATTahfk",
+      "sol_balance": 0.0,
+      "deployable_usd": 0,
+      "status": "EMPTY"
+    },
+    "binance_spot": {
+      "usdt_free": 161.1697,
+      "bnb_free": 0.0074,
+      "bnb_value_usd": 4.77,
+      "deployable_usd": 165.94,
+      "status": "ACTIVE"
+    },
+    "bybit_spot": { "status": "NOT_CONFIGURED" },
+    "mexc_spot":  { "status": "NOT_CONFIGURED" },
+    "hyperliquid": { "balance_usd": 0.0, "status": "EMPTY" },
+    "total_deployable_usd": 165.94,
+    "execution_venue_today": "binance_spot_only"
+  },
+
+  "macro_snapshot": {
+    "as_of_utc": "2026-04-18T10:00:00Z",
+    "fear_greed": { "value": 26, "label": "FEAR" },
+    "btc": { "price_usd": 77164, "change_24h_pct": 3.32, "change_7d_pct_est": 5.65 },
+    "eth": { "price_usd": 2408,  "change_24h_pct": 3.71, "change_7d_pct_est": 7.67 },
+    "sol": { "price_usd": 88.33, "change_24h_pct": 0.82, "change_7d_pct_est": 4.81 },
+    "bnb": { "price_usd": 645.52, "change_24h_pct": 2.75 },
+    "xrp": { "price_usd": 1.4697, "change_24h_pct": 3.12 },
+    "btc_dominance_pct": 57.32,
+    "total_market_cap_usd_t": 2.695,
+    "total_market_cap_change_24h_pct": 2.89,
+    "etf_flow_btc_usd_m": null,
+    "etf_flow_btc_status": "fetch_failed_403",
+    "polymarket_signals": {
+      "btc_above_80k_april":  { "implied_pct": 55, "volume_24h_usd": 3000000 },
+      "eth_above_2_6k_april": { "implied_pct": 47, "volume_24h_usd":  533000 },
+      "xrp_above_1_60_april": { "implied_pct": 40, "volume_24h_usd":   66200 },
+      "sol_above_100_april":  { "implied_pct": 29, "volume_24h_usd":  106000 }
+    },
+    "sector_temp": "WARM",
+    "macro_verdict": "SUPPORTS",
+    "trade_implication": "Alt-rotation thesis intact; alts coiling; F&G 26 caps sizing at ~50%."
+  },
+
+  "delta_from_prior_scan": {
+    "prior_scan_time_utc": "2026-04-18T01:00:00Z",
+    "minutes_elapsed": 540,
+    "changes": [
+      { "ticker": "XRP",  "prior_score": 82, "now_score": 80, "trend": "down",  "reason": "Pulled back to $1.470 from $1.481; vol cooled to 0.87x; setup intact" },
+      { "ticker": "APT",  "prior_score": 78, "now_score": 70, "trend": "down",  "reason": "Never broke $1.02 trigger; flat at $0.983" },
+      { "ticker": "TAO",  "prior_score": 72, "now_score": 62, "trend": "down",  "reason": "Vol declining 0.71x of prior 6h; RSI 58 fading" },
+      { "ticker": "LINK", "prior_score": 66, "now_score": 63, "trend": "stable", "reason": "Sideways at $9.59; no trigger fired" },
+      { "ticker": "ARB",  "prior_score": 65, "now_score": 50, "trend": "down",  "reason": "Token-unlock overhang; demoted to tail" },
+      { "ticker": "SUI",  "prior_score": null, "now_score": 63, "trend": "new", "reason": "Uptrend with consolidation 3.9% below 24h high; rotation laggard" },
+      { "ticker": "MOODENG", "prior_score": null, "now_score": 58, "trend": "new", "reason": "Only solid green pump.fun token (+6.6% 24h)" }
+    ]
+  },
+
+  "predictions": [
+    {
+      "rank": 1,
+      "ticker": "XRP",
+      "symbol": "$XRP",
+      "venue": "Binance Spot",
+      "chain": "cex",
+      "profile": "Major",
+      "score": 80,
+      "verdict": "BUY-NOW",
+      "conviction": "HIGH",
+      "horizon": "1-24h intraday",
+      "price_now_usd": 1.4697,
+      "change_1h_pct": 0.0,
+      "change_24h_pct": 3.12,
+      "rsi_1h": 48,
+      "vol_6h_ratio": 0.87,
+      "trend_4h": "BULL",
+      "trend_1h": "BULL_FLAG",
+      "trend_15m": "BASING",
+      "catalyst": "7 spot XRP ETFs in SEC final review · CLARITY Act + commodity status · $119.6M weekly net inflow",
+      "polymarket_implied_pct_target": { "above_1_60_april": 40 },
+      "trade_plan": {
+        "entry_zone": { "low": 1.467, "high": 1.472 },
+        "trigger_condition": null,
+        "sl": 1.452,
+        "tp1": 1.500,
+        "tp2": 1.560,
+        "tp3": 1.620,
+        "trailing_pct": 1.5,
+        "trailing_activate_at": "TP1_HIT",
+        "position_size_usd": 25,
+        "position_size_units": 17.0,
+        "position_size_pct_bag": 15,
+        "r_r": 5.5
+      },
+      "probability_distribution": { "up_24h_pct": 60, "down_pct": 15, "sideways_pct": 25 },
+      "thesis_one_line": "SEC final-review on 7 spot ETFs + CLARITY Act + $119.6M weekly inflow into clean bull-flag pullback",
+      "invalidation": "1h close below $1.450"
+    },
+    {
+      "rank": 2,
+      "ticker": "APT",
+      "symbol": "$APT",
+      "venue": "Binance Spot",
+      "chain": "cex",
+      "profile": "Major",
+      "score": 70,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM-HIGH",
+      "horizon": "6-24h intraday",
+      "price_now_usd": 0.983,
+      "change_1h_pct": 0.0,
+      "change_24h_pct": 1.32,
+      "rsi_1h": 49,
+      "vol_6h_ratio": 1.10,
+      "trend_4h": "BULL",
+      "trend_1h": "CONSOLIDATION",
+      "trend_15m": "COILING",
+      "catalyst": "Tokenomics overhaul Apr 14: 2.1B hard cap + stake APR cut + 100% gas burn (deflationary) + 210M foundation lock",
+      "polymarket_implied_pct_target": null,
+      "trade_plan": {
+        "entry_zone": null,
+        "trigger_condition": "break above $1.020 with 1h vol >= 1.5x avg",
+        "alt_trigger": "pullback to $0.975 (EMA21) + 1h bullish reversal candle",
+        "sl": 0.965,
+        "tp1": 1.045,
+        "tp2": 1.080,
+        "tp3": 1.140,
+        "trailing_pct": 2.0,
+        "trailing_activate_at": "TP1_HIT",
+        "position_size_usd": 20,
+        "position_size_units": 20.4,
+        "position_size_pct_bag": 12,
+        "r_r": 3.5
+      },
+      "probability_distribution": { "up_24h_pct": 50, "down_pct": 20, "sideways_pct": 30 },
+      "thesis_one_line": "Tokenomics overhaul = supply shock; needs $1.02 break to confirm",
+      "invalidation": "1h close below $0.965 OR BTC < $76K"
+    },
+    {
+      "rank": 3,
+      "ticker": "SUI",
+      "symbol": "$SUI",
+      "venue": "Binance Spot",
+      "chain": "cex",
+      "profile": "Major",
+      "score": 63,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "8-24h intraday",
+      "price_now_usd": 1.0025,
+      "change_1h_pct": 0.0,
+      "change_24h_pct": 2.49,
+      "rsi_1h": 55,
+      "vol_6h_ratio": 0.84,
+      "trend_4h": "BULL",
+      "trend_1h": "UPTREND_CONSOLIDATING",
+      "trend_15m": "BASING",
+      "catalyst": "Aptos rival rotation; uptrend below 24h high; rides BTC/alt-season tide (no fresh token-specific news)",
+      "polymarket_implied_pct_target": null,
+      "trade_plan": {
+        "entry_zone": null,
+        "trigger_condition": "break above $1.045 with 1h vol >= 1.3x avg",
+        "alt_trigger": "pullback to $0.990 + 15m bull reversal",
+        "sl": 0.975,
+        "tp1": 1.080,
+        "tp2": 1.120,
+        "tp3": 1.180,
+        "trailing_pct": 2.0,
+        "trailing_activate_at": "TP1_HIT",
+        "position_size_usd": 15,
+        "position_size_units": 15.0,
+        "position_size_pct_bag": 9,
+        "r_r": 2.7
+      },
+      "probability_distribution": { "up_24h_pct": 45, "down_pct": 25, "sideways_pct": 30 },
+      "thesis_one_line": "Rotation laggard catches up if APT fails $1.02 break",
+      "invalidation": "1h close below $0.975"
+    },
+    {
+      "rank": 4,
+      "ticker": "LINK",
+      "symbol": "$LINK",
+      "venue": "Binance Spot",
+      "chain": "cex",
+      "profile": "Major",
+      "score": 63,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "12-24h intraday",
+      "price_now_usd": 9.59,
+      "change_1h_pct": 0.0,
+      "change_24h_pct": 2.40,
+      "rsi_1h": 52,
+      "vol_6h_ratio": 1.0,
+      "trend_4h": "BULL",
+      "trend_1h": "SIDEWAYS",
+      "trend_15m": "BASING",
+      "catalyst": "Ongoing JPMorgan/UBS CCIP pilots + SBI Japan partnership (no fresh news today)",
+      "polymarket_implied_pct_target": null,
+      "trade_plan": {
+        "entry_zone": null,
+        "trigger_condition": "break above $9.85 with 1h vol >= 1.5x avg",
+        "alt_trigger": "pullback to $9.40 + 1h bull reversal",
+        "sl": 9.30,
+        "tp1": 10.20,
+        "tp2": 10.65,
+        "tp3": 11.20,
+        "trailing_pct": 2.0,
+        "trailing_activate_at": "TP1_HIT",
+        "position_size_usd": 12,
+        "position_size_units": 1.25,
+        "position_size_pct_bag": 7,
+        "r_r": 2.7
+      },
+      "probability_distribution": { "up_24h_pct": 42, "down_pct": 23, "sideways_pct": 35 },
+      "thesis_one_line": "Clean structure but catalyst-light; rides macro tide",
+      "invalidation": "1h close below $9.30"
+    },
+    {
+      "rank": 5,
+      "ticker": "TAO",
+      "symbol": "$TAO",
+      "venue": "Binance Spot",
+      "chain": "cex",
+      "profile": "Major",
+      "score": 62,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "12-24h intraday",
+      "price_now_usd": 254.00,
+      "change_1h_pct": 0.0,
+      "change_24h_pct": 3.10,
+      "rsi_1h": 58,
+      "vol_6h_ratio": 0.71,
+      "trend_4h": "BULL",
+      "trend_1h": "CONSOLIDATION_UNDER_PEAK",
+      "trend_15m": "BASING",
+      "catalyst": "Grayscale AI fund weight 31%->43% Apr 7 · Conviction Mechanism Apr 16 · narrative still warm",
+      "polymarket_implied_pct_target": null,
+      "trade_plan": {
+        "entry_zone": null,
+        "trigger_condition": "break above $263 with 1h vol >= 1.5x avg (vol expansion REQUIRED, otherwise skip)",
+        "alt_trigger": "deep pullback to $244 (high R/R, risky)",
+        "sl": 244,
+        "tp1": 275,
+        "tp2": 290,
+        "tp3": 310,
+        "trailing_pct": 2.5,
+        "trailing_activate_at": "TP1_HIT",
+        "position_size_usd": 12,
+        "position_size_units": 0.0472,
+        "position_size_pct_bag": 7,
+        "r_r": 2.9
+      },
+      "probability_distribution": { "up_24h_pct": 40, "down_pct": 30, "sideways_pct": 30 },
+      "thesis_one_line": "Vol declining = yellow flag; only enter on trigger break with vol expansion",
+      "invalidation": "1h close below $244 OR vol fails to expand on $263 break"
+    }
+  ],
+
+  "memecoin_watchlist_pumpfun": [
+    {
+      "ticker": "MOODENG",
+      "mint": "ED5nyyWEzpPPiWimP8vY...",
+      "score": 58,
+      "verdict": "WATCH",
+      "mcap_usd_m": 60.33,
+      "change_1h_pct": 4.1,
+      "change_24h_pct": 6.6,
+      "txns_1h": 477,
+      "note": "Only solid green on pump.fun; revival momentum; buy trigger above $0.0625 (Solana wallet empty - informational only)"
+    },
+    {
+      "ticker": "Pnut",
+      "mint": "2qEHjDLDLbuBgRYvsxhc...",
+      "score": 42,
+      "verdict": "SKIP",
+      "mcap_usd_m": 63.72,
+      "change_1h_pct": 4.4,
+      "change_24h_pct": -8.4,
+      "note": "Reversal attempt but down day"
+    },
+    {
+      "ticker": "Fartcoin",
+      "mint": "9BB6NFEcjBCtnNLFko2F...",
+      "score": 40,
+      "verdict": "SKIP",
+      "mcap_usd_m": 218.50,
+      "change_1h_pct": 1.2,
+      "change_24h_pct": 1.0,
+      "note": "Too mature for memecoin pump; low edge"
+    }
+  ],
+
+  "tail_skipped": [
+    { "ticker": "ARB",       "score": 50, "reason": "Sideways; token unlock Apr 16 overhead overhang" },
+    { "ticker": "INJ",       "score": 38, "reason": "Only red major; RSI 42 downtrend" },
+    { "ticker": "BELIEF",    "score": 36, "reason": "Solana DEX +28% 24h but $397K liq fails $500K gate" },
+    { "ticker": "DUMBMONEY", "score": 32, "reason": "Solana DEX +46% 24h but $245K liq + already +22% 1h (too hot)" },
+    { "ticker": "ASTROID",   "score": 25, "reason": "+646% 24h blow-off; high rug risk" },
+    { "ticker": "Crashout",  "score": 20, "reason": "+1404% 24h then -18.76% 1h, peaked" },
+    { "ticker": "yn",        "score":  5, "reason": "-55.8% 24h, falling knife" }
+  ],
+
+  "action_summary": {
+    "buy_now": [
+      { "ticker": "XRP", "venue": "Binance Spot", "size_usd": 25, "entry_zone": [1.467, 1.472], "sl": 1.452, "tp1": 1.500 }
+    ],
+    "buy_watch_triggers": [
+      { "ticker": "APT",  "trigger": "break >$1.020 with vol >=1.5x", "size_usd": 20 },
+      { "ticker": "SUI",  "trigger": "break >$1.045 with vol >=1.3x", "size_usd": 15 },
+      { "ticker": "LINK", "trigger": "break >$9.85 with vol >=1.5x",  "size_usd": 12 },
+      { "ticker": "TAO",  "trigger": "break >$263 with vol >=1.5x",   "size_usd": 12 }
+    ],
+    "hold_existing": [],
+    "sell_now": [],
+    "deployment_today_usd": 25,
+    "deployment_today_pct_bag": 15,
+    "deployment_if_all_triggers_fire_usd": 84,
+    "deployment_if_all_triggers_fire_pct_bag": 51,
+    "reserve_usd": 82,
+    "reserve_pct_bag": 49,
+    "aggregate_sl_risk_worst_case_usd": 1.86,
+    "aggregate_sl_risk_worst_case_pct_bag": 1.1,
+    "top_next_action": "Buy 17 XRP @ $1.470 on Binance spot, SL $1.452, TP1 $1.500. Wire Tier-1 automation immediately.",
+    "invalidation_triggers": [
+      "BTC drops below $76,000 (lose alt-rotation tailwind)",
+      "F&G falls below 22 (panic-fear)",
+      "XRP closes 1h candle below $1.450 (flag breakdown)"
+    ]
+  }
+}
