@@ -8,12 +8,13 @@ Load this file for the complete trade plan format, position sizing, SL/TP/traili
 
 Every trade follows this exact sequence — no shortcuts:
 
-1. **Check balance** on the target venue
+0. **Resolve execution mode** — `paper` / `live` / `simulated`. Precedence: per-message keyword ("paper trade", "dry run", "simulate" → paper; "live trade" / live-venue name → live) > `ARIA_EXECUTION_MODE` env var > **default paper**. If paper is resolved, also load `references/alpaca-paper.md`.
+1. **Check balance** on the target venue (venue is determined by mode + asset — see map below)
 2. **Calculate position size** from available capital
 3. **Build full trade plan** — entry, SL, TP1/TP2/TP3, trailing stop
-4. **Show confirmation format** — WAIT for explicit approval
+4. **Show confirmation format** — WAIT for explicit approval. The Venue line MUST include `Mode: PAPER | LIVE | SIMULATED`.
 5. **Execute** on "make the trade" / "execute" / "go" / "yes"
-6. **Wire automation** — ALL Tier 1 + Tier 2 rules immediately after fill
+6. **Wire automation** — ALL Tier 1 + Tier 2 rules immediately after fill (live via `clodds_automation` + `clodds_alerts`; paper via Alpaca bracket/child orders; simulated = journal only)
 7. **Report fill** — price, fees, balance, automation status
 
 ---
@@ -21,12 +22,13 @@ Every trade follows this exact sequence — no shortcuts:
 ## STEP 1: BALANCE CHECK BY VENUE
 
 ```
-Solana:      clodds_solana_balance + clodds_pumpfun_balance
-Binance:     clodds_binance_spot_balance
-Bybit:       clodds_bybit_spot_balance
-MEXC:        clodds_mexc_spot_balance
-Hyperliquid: clodds_hyperliquid_balance
-All:         clodds_portfolio_summary + clodds_bags + clodds_risk
+Solana:         clodds_solana_balance + clodds_pumpfun_balance
+Binance:        clodds_binance_spot_balance
+Bybit:          clodds_bybit_spot_balance
+MEXC:           clodds_mexc_spot_balance
+Hyperliquid:    clodds_hyperliquid_balance
+Alpaca (paper): mcp__alpaca__get_account_info + mcp__alpaca__get_all_positions
+All:            clodds_portfolio_summary + clodds_bags + clodds_risk
 ```
 
 Output:
@@ -90,7 +92,8 @@ Always use this exact format. Never execute before showing it.
 
   Action:         BUY / SELL / LONG / SHORT / CLOSE
   Asset:          $[TICKER or SYMBOL]
-  Venue:          [Binance / Bybit / MEXC / Hyperliquid / pump.fun / Jupiter]
+  Venue:          [Binance / Bybit / MEXC / Hyperliquid / pump.fun / Jupiter / Alpaca]
+  Mode:           PAPER | LIVE | SIMULATED
   ────────────────────────────────────────────────────
   Available:      X.XX SOL / $X,XXX on [venue]
   Trade size:     X.XX SOL / $X,XXX  (X% of available capital)
@@ -154,6 +157,27 @@ clodds_monitoring → activate continuous health check, interval 30min
   Remaining balance: X.XX SOL / $X,XXX on [venue]
   Open position:     X.XX SOL / $X,XXX at avg entry $X.XX
 ```
+
+---
+
+## PAPER-TRADE BRANCH (mode = PAPER or SIMULATED)
+
+When STEP 0 resolves execution mode to `paper`, the flow above still applies but the tooling swaps:
+
+| Phase | Live path | Paper path (Alpaca-supported asset) | Simulated path (asset not on Alpaca) |
+|---|---|---|---|
+| Balance (STEP 1) | `clodds_<venue>_spot_balance` | `mcp__alpaca__get_account_info` + `get_all_positions` | Use user's nominal paper budget (configurable) |
+| Price quote | `clodds_<venue>_spot_price` | `mcp__alpaca__get_stock_latest_quote` / `get_crypto_latest_quote` | `clodds_pumpfun quote` / `clodds_jupiter_quote` / GeckoTerminal mid |
+| Execute (STEP 5) | `clodds_<venue>_spot_buy` / `_sell` etc. | `mcp__alpaca__place_stock_order` (order_class=bracket) or `place_crypto_order` (parent + child SL/TP) | **No execution call** — journal row only |
+| Automation (STEP 6) | `clodds_automation` + `clodds_alerts` | Alpaca bracket / child orders + native `trailing_stop` order type | None — track via journal Status-check |
+| Journal mode | `mode: "live"` | `mode: "paper"`, `alpaca_order_id: <uuid>`, `venue: "alpaca-paper-stock"` or `"alpaca-paper-crypto"` | `mode: "simulated"`, `alpaca_order_id: null`, `venue: "alpaca-simulated"` |
+
+**Full detail** — including the supported-crypto allowlist, market-hours gate, bracket vs child-order semantics, trailing-stop activation rule, and the simulated-fill quote-and-journal sequence — lives in `references/alpaca-paper.md`. Load that file as soon as mode resolves to paper.
+
+**Asset-routing rule** (determines which column applies):
+- Equity ticker → paper path, `place_stock_order`
+- Crypto in Alpaca's allowlist (BTC/ETH/SOL/LINK/…) → paper path, `place_crypto_order`
+- pump.fun / PumpSwap / Raydium / unlisted alt → simulated path, no order
 
 ---
 
