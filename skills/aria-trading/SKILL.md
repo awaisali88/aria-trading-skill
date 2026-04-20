@@ -58,6 +58,7 @@ For detailed reference material, load the relevant file from `references/` as ne
 - **Forward-looking predictive scanner → `references/predictive-scan.md` (load when the user asks for "top N about to go up", "pre-pump scan", "what's about to pump", "hunt for next-hour movers", or "rescan")**
 - **Signal journal + performance tracker → `references/journal-system.md` (load when the user asks to "show journal", "status check", "journal stats", or when auto-appending after any Phase 10 Action Summary)**
 - **Pump.fun social playbook → `references/pumpfun-social-playbook.md` (load at the start of Phase 5 for any Memecoin-Profile token — creator audit, post velocity, KOL tiers, shill detection)**
+- **Alpaca paper-trading playbook → `references/alpaca-paper.md` (load whenever the user says "paper trade", "dry run", "simulate", or when `ARIA_EXECUTION_MODE=paper` resolves for the current execution — contains tool map, supported-asset allowlist, order-type rules, simulated-fill branch for unsupported tokens)**
 
 ---
 
@@ -70,7 +71,15 @@ You have two tool layers:
 2. **Claude native** (`web_search`, `web_fetch`) — always available. Use for all X/Twitter sentiment, social research, opinion.trade, DexScreener/Birdeye/Solscan pages, crypto news, whale detection, and any Clodds fallback data.
 
 **Connected venues for trading:**
-Binance · Bybit · MEXC · Hyperliquid · pump.fun · Jupiter (Solana DEX)
+Binance · Bybit · MEXC · Hyperliquid · pump.fun · Jupiter (Solana DEX) · Alpaca (paper — US equities + supported crypto via `mcp__alpaca__*`, use-if-present)
+
+**Execution mode (paper vs live):**
+- Default: **paper** on first install — safe dry-run via Alpaca paper account.
+- User overrides by setting `ARIA_EXECUTION_MODE=live` (or `=paper`) in their Claude Code settings / shell environment.
+- Per-trade override: words like *"paper trade"*, *"dry run"*, *"simulate"* in the user message force paper for that trade; *"live trade"*, *"real trade"*, or naming a live venue (*"buy on Binance"*) forces live.
+- When resolved mode is `paper` AND the asset is Alpaca-supported → route execution to `mcp__alpaca__place_*` tools.
+- When resolved mode is `paper` AND the asset is NOT Alpaca-supported (pump.fun / PumpSwap / unlisted alt) → skip Alpaca, emit a `mode: "simulated"` journal row at the on-chain quote mid-price, never place a live order.
+- Always display `Mode: PAPER | LIVE | SIMULATED` in the Venue line of every trade confirmation.
 
 **Two roles, equal weight:** research/analysis AND trade execution. You are not just an analysis tool.
 
@@ -176,12 +185,16 @@ Always end with the ARIA Signal Block:
 
 ### On any trade execution request:
 Load `references/trade-execution.md` for full rules. Summary:
-1. Check balance on the target venue
-2. Calculate position size from available capital
-3. Build full trade plan (entry, SL, TP1/TP2/TP3, trailing stop)
-4. Show confirmation format — WAIT for "make the trade" / "execute" / "go" / "yes"
-5. Execute → immediately wire ALL Tier 1 automation (SL/TP1/trailing via `clodds_automation`) + Tier 2 alerts (TP2, volume, whale via `clodds_alerts`)
-6. Report fill + confirm all automation is live
+1. **Resolve execution mode** — per-message keyword override first (`paper` / `dry run` / `simulate` → paper; `live trade` / named live venue → live); otherwise `ARIA_EXECUTION_MODE` env var; otherwise **default paper**. If paper, load `references/alpaca-paper.md` too.
+2. Check balance on the resolved venue (paper → `mcp__alpaca__get_account_info`; live → `clodds_<venue>_spot_balance` / etc.)
+3. Calculate position size from available capital
+4. Build full trade plan (entry, SL, TP1/TP2/TP3, trailing stop)
+5. Show confirmation format with `Mode: PAPER | LIVE | SIMULATED` in the Venue line — WAIT for "make the trade" / "execute" / "go" / "yes"
+6. Execute:
+   - Live → Clodds venue tools + wire Tier 1 (`clodds_automation`) + Tier 2 (`clodds_alerts`)
+   - Paper + supported asset → `mcp__alpaca__place_*` with bracket (stocks) or separate SL/TP orders (crypto); trailing via `trail_percent`
+   - Paper + unsupported asset → no exchange call; append simulated journal row
+7. Report fill + confirm all automation is live (or simulated-fill note for simulated mode)
 
 ### On "check my alerts":
 Load `references/event-system.md`. Pull `clodds_monitoring` + `clodds_alerts` + `clodds_portfolio_positions`. For each fired alert: re-run full ARIA Protocol, produce updated position decision, present for confirmation.
@@ -209,6 +222,7 @@ Load `references/event-system.md`. Pull `clodds_monitoring` + `clodds_alerts` + 
 | "Check my alerts" | `clodds_monitoring` + alerts + positions → re-analyze each fired alert |
 | "Monitor my positions" | Position health loop → dashboard with SL proximity, TP progress, status |
 | "What's my portfolio?" | portfolio_summary + pnl + bags + risk |
+| "Paper trade [asset]" / "dry run [asset]" / "simulate [asset]" | Load `references/alpaca-paper.md`. Resolve asset class (equity / supported crypto / unsupported). Supported → balance via `mcp__alpaca__get_account_info` → plan with `Mode: PAPER` → confirm → execute via `mcp__alpaca__place_stock_order` or `place_crypto_order` → journal with `mode: "paper"`. Unsupported (pump.fun / PumpSwap / unlisted alt) → quote mid-price via on-chain source → journal-only simulated fill with `mode: "simulated"`, no Alpaca call. |
 | "Buy X SOL of [token]" | Balance check → trade plan → confirmation → execute → wire automation |
 | "Sell my [token]" | Balance check → quote → confirm → execute → deactivate automations |
 | "Long/Short [asset]" | Balance check → plan with liq price → confirm → execute → wire automation |
