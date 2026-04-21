@@ -18,9 +18,9 @@ For every URL pattern that is known to block anonymous automated fetches, the ta
 | `gmgn.ai/sol/address/<wallet>` | 403 | `web_fetch https://api.gmgn.ai/api/v1/wallet/sol/<wallet>` | `web_fetch https://api.cielo.finance/v1/wallet/<wallet>` (public pnl endpoint) | Perplexity: `"prior token launches by Solana wallet <wallet>"` | `UNKNOWN (creator wallet: 3 fallbacks failed)` |
 | `clodds_pumpfun holders/trades/chart <mint>` | 404 | `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info` + `/pools/<pool>/trades?limit=100` | `web_fetch https://api.dexscreener.com/token-pairs/v1/solana/<mint>` | Perplexity: `"recent trades and holder concentration for <mint>"` (last-resort — GT usually suffices) | `INSUFFICIENT (GT + DexScreener empty)` |
 | `rugcheck.xyz/tokens/<mint>` returns `risks:[], topHolders:null, tokenMeta:null` | sparse (not 404 — looks OK but empty) | `web_fetch https://honeypot.is/api/v2/scan?network=solana&address=<mint>` | `web_fetch https://api.gopluslabs.io/api/v1/token_security/solana?contract_addresses=<mint>` | Perplexity: `"honeypot / rug indicators for Solana mint <mint>"` | **Flag `SPARSE` — do NOT count as clean.** In Phase 1, treat sparse-rugcheck as no-data and insist on 2+ corroborating sources before passing the security gate. |
-| `x.com/<handle>/status/<id>` | (not an error) — currently mis-handled as "status not account" | Run `pumpfun-social-playbook.md §1.4 X-STATUS HANDLER` | Nitter mirror rotation (§2 below) | Perplexity: `"tweet at <URL> — full text, likes, replies, top-3 reply handles"` | `UNKNOWN (nitter + Perplexity failed)` |
-| `x.com/<handle>` | 402 / 403 | Nitter mirror rotation (§2): try `nitter.net/<handle>`, then next mirror on 5xx | `web_search "@<handle> twitter followers"` | Perplexity: `site:x.com <handle> — follower count, bio, account creation date, post count` | `UNKNOWN (X 402/403 + nitter + search failed)` |
-| `x.com/i/communities/<id>` | 402 | `web_fetch https://nitter.net/i/communities/<id>` (plus next mirrors) | `web_search "x.com/i/communities/<id> members"` | Perplexity: `"X community <id> member count, activity level, associated tickers"` | `UNKNOWN (community 402 + 2 fallbacks failed)` |
+| `x.com/<handle>/status/<id>` | (not an error) — currently mis-handled as "status not account" | **`mcp__*twitterapi*__*` MCP if present** (TwitterAPI.io live proxy — returns full tweet JSON) → run `pumpfun-social-playbook.md §1.4 X-STATUS HANDLER` | `cdn.syndication.twimg.com/tweet-result?id=<id>` (free public JSON) → Nitter mirror rotation (§3) | Perplexity: `"tweet at <URL> — full text, likes, replies, top-3 reply handles"` | `UNKNOWN (MCP + syndication + nitter + Perplexity failed)` |
+| `x.com/<handle>` | 402 / 403 | **`mcp__*twitterapi*__*` MCP if present** (`get_user_by_username` / `user_resource`) | Nitter mirror rotation (§3) → `web_search "@<handle> twitter followers"` | Perplexity: `site:x.com <handle> — follower count, bio, account creation date, post count` | `UNKNOWN (MCP + nitter + search failed)` |
+| `x.com/i/communities/<id>` | 402 | **`mcp__*twitterapi*__*` MCP `search_tweets` with community filter** if present | `web_fetch https://nitter.net/i/communities/<id>` (plus next mirrors) → `web_search "x.com/i/communities/<id> members"` | Perplexity: `"X community <id> member count, activity level, associated tickers"` | `UNKNOWN (MCP + community 402 + fallbacks failed)` |
 | `discord.gg/<invite>` (or `discord.com/invite/<invite>`) — masked invite HTML | invite HTML doesn't show counts | `web_fetch https://discord.com/api/v10/invites/<invite>?with_counts=true` → JSON with `approximate_member_count` + `approximate_presence_count` + `guild.name` + `guild.description` | `web_fetch` the invite landing page and parse meta tags (fallback) | Perplexity: `"Discord server discord.gg/<invite> — member count, activity level, topic"` | `Discord: unverifiable (3 tiers failed)` — **not** "dead link" |
 | `t.me/<handle>` | preview thin | `web_fetch https://t.me/s/<handle>` (public web preview, shows last ~N messages + member count) | `web_search "<tg_link> telegram members"` | Perplexity: `"Telegram channel @<handle> — member count, post frequency, last message date"` | `Telegram: unverifiable (3 tiers failed)` |
 | `<project-website>` | ECONNREFUSED / DNS fail / 404 | `web_fetch https://web.archive.org/web/2025*/<url>` and `https://web.archive.org/web/2026*/<url>` (wayback machine) | `web_search "<domain> crypto project"` + check any result with screenshot/cache | Perplexity: `"content of <domain> — is there a live version, cached snapshot, or public record of what this site was"` | `Website: DEAD (wayback empty)` — only mark DEAD after wayback confirms no archive |
@@ -29,9 +29,41 @@ For every URL pattern that is known to block anonymous automated fetches, the ta
 
 ---
 
-## §2 — Nitter mirror rotation
+## §2 — TwitterAPI.io MCP (tier-1, preferred)
 
-When any `x.com/<path>` fetch returns 402/403 or needs scraping, rotate through these public Nitter hosts in order. On 5xx, connection-refused, or timeout from mirror *N*, advance to mirror *N+1* — don't abandon the query:
+When the user has installed the [TwitterAPI.io MCP](https://pypi.org/project/twitterapi-mcp/) and any tool matching the glob `mcp__*twitterapi*__*` (or the configured server name from `claude mcp list`) appears in the session's tool list, **prefer it as tier 1 for every X/Twitter fetch** — it returns full live JSON (tweet text, author, likes, reposts, replies, quote count, bookmarks, timestamps) with a real SLA. Same use-if-present pattern as Binance/CoinGecko/Perplexity.
+
+### Common operations → expected MCP tool / resource
+
+| Need | MCP tool / resource | Notes |
+|---|---|---|
+| Tweet by ID (full JSON incl. engagement) | `get_tweet` / resource `tweet://{tweet_id}` | Primary endpoint for §1.4 X-status handler |
+| Tweet replies (top N) | resource `tweet://{tweet_id}/replies` | Feeds shill-detection + reply sentiment |
+| Tweet retweeters | resource `tweet://{tweet_id}/retweeters` | KOL-tier check (do any retweeters have >10K followers?) |
+| User profile (followers, age, bio, post count) | `get_user_profile` / resource `user://{username}` | Step §1.2 creator handle legitimacy |
+| User recent tweets | resource `user://{username}/tweets` | Post-velocity leading indicator (see pumpfun-social-playbook.md §2) |
+| Search tweets | `search_tweets` | `$TICKER` cashtag search → KOL tier scan |
+
+### Graceful degradation
+
+- **No MCP installed** → skip silently, advance to tier 2 (syndication / nitter).
+- **MCP installed but returns 401/403** → API key issue; log in audit table as `TwitterAPI.io auth failed`, advance to tier 2, do NOT retry (protect user's rate limit).
+- **MCP installed and returns 429 rate-limit** → advance to tier 2 once, then back off and resume MCP on the next invocation.
+- **Any MCP tool returns the tweet / profile data** → **stop the chain immediately**; nitter/Perplexity/search are not consulted.
+
+### Cost awareness
+
+TwitterAPI.io charges ~$0.00015 per API call (15 credits minimum). Per-analysis cost is trivial (<$0.01 for a 5–10 tweet memecoin dig), but **do not batch-fetch entire user timelines unless post-velocity measurement genuinely requires it.** Follow the token-minimalism cap in §5 below — same 4-call ceiling per URL applies to MCP calls.
+
+### Attribution
+
+Tag any datapoint sourced via the MCP as `(via TwitterAPI.io)` in the rendered Phase 5 block. This distinguishes paid-tier high-confidence data from the free-tier Nitter / Perplexity tiers, which carry a staleness / hallucination risk.
+
+---
+
+## §3 — Nitter mirror rotation (tier-2 free fallback)
+
+When the TwitterAPI.io MCP is not available, or returns an error, rotate through these public Nitter hosts in order. On 5xx, connection-refused, or timeout from mirror *N*, advance to mirror *N+1* — don't abandon the query:
 
 ```
 1. https://nitter.net/<path>
@@ -54,7 +86,7 @@ Nitter cannot access private/locked accounts — those remain `UNKNOWN` regardle
 
 ---
 
-## §3 — Perplexity fallback tier
+## §4 — Perplexity fallback tier (tier-3 last resort)
 
 Perplexity MCP (when the user has it installed) is the tier-3 "last resort" for pages/content that all direct fetches refuse to serve. The skill is **MCP-agnostic** — it looks for any tool matching the glob `mcp__*perplexity*__*` (or `mcp__*pplx*__*`) in the current session's tool list, same use-if-present pattern as the Binance/CoinGecko chain in `tool-inventory.md`.
 
@@ -90,7 +122,7 @@ Perplexity is for **social/meta/site-content signals only** — things that are 
 
 ---
 
-## §4 — When to stop (token-minimalism cap)
+## §5 — When to stop (token-minimalism cap)
 
 Per `memory/feedback_token_minimalism.md`, the skill must not burn context retrying forever. Hard cap per URL:
 
@@ -112,7 +144,7 @@ Example audit row:
 
 ---
 
-## §5 — Integration points in the pipeline
+## §6 — Integration points in the pipeline
 
 - **Phase 1** (`aria-protocol.md § PHASE 1`) — if `clodds_token_security` or rugcheck returns sparse, dispatch via §1 table. After 5 of 7 tiered sources fail, render the `PRESUMED-RISK` banner per aria-protocol.md.
 - **Phase 4** (`aria-protocol.md § PHASE 4 On-chain`) — before labeling `Creator wallet: UNKNOWN`, dispatch via §1 rows for `solscan.io/account/*` and `gmgn.ai/sol/address/*`.
@@ -122,7 +154,7 @@ Example audit row:
 
 ---
 
-## §6 — Extending this table
+## §7 — Extending this table
 
 When new sources/errors are encountered in the wild, add a row to §1 with:
 1. The exact URL pattern that fails

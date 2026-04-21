@@ -57,11 +57,22 @@ If all 8 fail → the creator X handle is **UNKNOWN**. Render `Creator X: UNKNOW
 
 ### Step 1.2 — Verify handle legitimacy
 
+Prefer the TwitterAPI.io MCP when present (paid tier, live JSON), otherwise fall through Nitter rotation:
+
 ```
-web_fetch https://x.com/<handle>
+Tier 1 (preferred): mcp__*twitterapi*__* — call get_user_profile / resource user://<handle>
+                    → returns followers, following, post count, creation_at,
+                      profile_image, description (bio), verified flag, location
+
+Tier 2:             web_fetch https://nitter.net/<handle>  (rotate mirrors per
+                    link-resolution.md §3 on 5xx)
+
+Tier 3:             web_fetch https://x.com/<handle>  (often 402 but try once)
+
+Tier 4:             Perplexity / web_search for "@<handle> twitter followers"
 ```
 
-Extract:
+Extract in this order of fields:
 - **Follower count**
 - **Account creation date** (compute age in days)
 - **Post count** (total)
@@ -114,19 +125,40 @@ b) Run §1.2 (handle legitimacy) on the EXTRACTED handle.
 
 c) Fetch the status itself (rotate tiers on 402/403/5xx):
 
-   Tier 1:  web_fetch https://nitter.net/<handle>/status/<status_id>
-            On 5xx / refused → advance through link-resolution.md § §2 mirror rotation.
+   Tier 1:  TwitterAPI.io MCP — if mcp__*twitterapi*__* is in session:
+            Call get_tweet (or resource tweet://{status_id}) to pull
+            full JSON: text, author, posted_at, likes, reposts, replies,
+            quote count, bookmarks. Then get resource tweet://{status_id}/replies
+            (top 20) for the reply-sentiment + shill-detection signal.
+            This is the preferred path — paid SLA, live data, no scraping.
 
-   Tier 2:  web_fetch https://x.com/<handle>/status/<status_id>
+   Tier 2:  cdn.syndication.twimg.com/tweet-result?id=<status_id>&token=<deterministic_token>
+            Public Twitter syndication API used by embedded-tweet widgets
+            — free, no auth. Returns text + author + timestamp + basic
+            engagement counts. Less complete than the MCP but always on.
+
+   Tier 3:  Nitter mirror rotation — advance through link-resolution.md §3:
+            nitter.net → nitter.privacydev.net → nitter.poast.org →
+            nitter.kavin.rocks → nitter.1d4.us → nitter.unixfox.eu.
+            On "empty body" from one mirror, try the next mirror ONCE,
+            then advance tiers — empty body usually means this tweet
+            isn't indexed here, not that the mirror is down.
+
+   Tier 4:  web_fetch https://x.com/<handle>/status/<status_id>
             Often 402 but worth 1 try — some IPs / times succeed.
 
-   Tier 3:  Perplexity (if mcp__*perplexity*__* present):
+   Tier 5:  Perplexity (if mcp__*perplexity*__* present):
             "Return the full text, posted UTC date, likes, reposts, replies,
              and top-3 reply handles for <URL>. If behind paywall, use
              nitter/cache/archive mirrors."
 
-   Tier 4:  web_search "\"<status_id>\" site:x.com OR site:nitter.net"
+   Tier 6:  web_search "\"<status_id>\" site:x.com OR site:nitter.net"
             Last resort — surfaces any quote-tweets or archives.
+
+   Stop the chain at the first tier that returns usable data.
+   Tag the rendered Phase 5 block with the sourcing tier — e.g.
+   "(via TwitterAPI.io)", "(via syndication)", "(via nitter.net)",
+   "(via Perplexity)" — so the reader sees the confidence floor.
 
 d) Extract from the response:
    - tweet_text                       (full, not truncated)
@@ -178,15 +210,23 @@ Both must be computed. 1h velocity is the immediate ignition signal; 24h velocit
 
 ### Data collection
 
+Prefer the TwitterAPI.io MCP when present — it returns timestamped result arrays that can be bucketed exactly, not approximated from search snippets:
+
 ```
-web_search "$<TICKER> site:x.com"
-  → Count results that reference the token in the last 1h, 24h, 7d.
-  → Most engines don't filter by hour directly — apply these heuristics:
-    - Results with "just now" / "Xm ago" timestamps → last-1h bucket
-    - Results with "Xh ago" where X ≤ 23 → last-24h bucket
-    - Results with "Xd ago" where X ≤ 7 → last-7d bucket
-  → If search volume is too small to bucket reliably, fall back to:
-    web_search "<token name> OR <ticker> solana crypto" and count results dated this week.
+Tier 1 (preferred): mcp__*twitterapi*__* search_tweets query="$<TICKER>" or "<token name>"
+                    → returns array of tweets with exact posted_at timestamps
+                    → bucket directly: count where posted_at ≥ now-1h, ≥ now-24h, ≥ now-7d
+                    → no approximation, no "Xm ago" parsing
+
+Tier 2:             web_search "$<TICKER> site:x.com"
+                    → Count results that reference the token in the last 1h, 24h, 7d.
+                    → Engines don't filter by hour directly — apply these heuristics:
+                      - Results with "just now" / "Xm ago" → last-1h bucket
+                      - Results with "Xh ago" where X ≤ 23 → last-24h bucket
+                      - Results with "Xd ago" where X ≤ 7 → last-7d bucket
+                    → If search volume is too small to bucket reliably, fall back to:
+                      web_search "<token name> OR <ticker> solana crypto" and count results
+                      dated this week.
 ```
 
 ### Thresholds (velocity tiers)
@@ -222,9 +262,15 @@ web_search "$<TICKER> site:x.com"
 ### Data collection
 
 ```
-web_search "$<TICKER> site:x.com"
-→ For each result: extract the @handle of the poster.
-→ web_fetch https://x.com/<handle> or inspect result metadata for follower count.
+Tier 1 (preferred): mcp__*twitterapi*__* search_tweets query="$<TICKER>"
+                    → For each returned tweet: extract author.handle + author.followers_count
+                      directly from the result object (no per-handle re-fetch needed)
+                    → Tier-tag immediately by follower bucket
+
+Tier 2:             web_search "$<TICKER> site:x.com"
+                    → For each result: extract the @handle of the poster.
+                    → web_fetch https://x.com/<handle> OR nitter mirror to resolve
+                      follower count for tier tagging.
 ```
 
 ### Known KOL quick-reference
