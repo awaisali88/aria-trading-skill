@@ -46,10 +46,15 @@ Works with [40+ agents](https://skills.sh). You'll need to configure the Clodds 
 
 ## Prerequisites
 
-### Clodds MCP Server (required)
+ARIA uses a **tiered MCP strategy** — required, recommended, and optional. The skill detects MCPs at runtime using a use-if-present glob pattern (`mcp__*<name>*__*`), so install only what you need. Missing optionals degrade gracefully — the skill falls through to slower or less accurate routes but never halts.
 
-ARIA uses the Clodds MCP server for all trading tools. You need:
+### 🔴 Required
 
+#### Clodds MCP Server
+
+All trading-venue execution (Binance · Bybit · MEXC · Hyperliquid · pump.fun · Jupiter) plus on-chain, portfolio, alerts, and automation tools. Without this, ARIA cannot place trades or read live balances.
+
+You need:
 1. A running Clodds MCP server (local or hosted on Railway/Fly.io/etc.)
 2. Exchange API keys configured in Clodds
 
@@ -72,13 +77,63 @@ export CLODDS_MCP_TOKEN="your-mcp-auth-token"
 }
 ```
 
-### Exchange Accounts
-
-Configure API keys in Clodds for any combination of:
+Configure API keys inside Clodds for any combination of:
 - **CEX:** Binance, Bybit, MEXC, Hyperliquid
 - **DEX:** Solana wallet (for Jupiter, pump.fun, Drift, etc.)
-- **Optional:** Polymarket, Kalshi (prediction markets)
-- **Optional:** Slack (trade notifications)
+- **Prediction markets:** Polymarket, Kalshi (optional)
+- **Notifications:** Slack (optional)
+
+### 🟡 Strongly Recommended
+
+These MCPs materially improve analysis accuracy. Skipping them means the skill falls through to slower or less reliable `web_fetch` routes with lower-quality data.
+
+#### Alpaca MCP — paper-trading default
+
+Makes the default execution mode **paper** (safe dry-run), routes US equity and supported-crypto trades to Alpaca's paper account. Unsupported assets (pump.fun/alt tokens) fall through to a journal-only simulated row. Set `ARIA_EXECUTION_MODE=live` to flip the default to live venues.
+
+```bash
+claude mcp add --scope user -e ALPACA_API_KEY=<key> -e ALPACA_SECRET_KEY=<secret> alpaca -- uvx alpaca-mcp-server
+```
+Get keys at [alpaca.markets/docs/api-documentation/paper-trading](https://alpaca.markets/docs/api-documentation/paper-trading/) (free paper account).
+
+#### TwitterAPI.io MCP — tier-1 X/Twitter data
+
+Replaces the flaky public Nitter rotation with a paid proxy that actually returns tweet JSON reliably. Used for the §1.4 X-status handler (tweet fetch + replies + engagement), post-velocity calculation, KOL tier tagging, and creator-handle legitimacy. **Cost: ~$0.01 per full memecoin analysis** (15 credits per tweet, pay-as-you-go).
+
+```bash
+claude mcp add-json --scope user twitterapi '{"command":"uvx","args":["--with","mcp==1.6.0","twitterapi-mcp"],"env":{"TWITTER_API_KEY":"<key>"}}'
+```
+Get key at [twitterapi.io](https://twitterapi.io). Note the `mcp==1.6.0` pin — the upstream package passes a `settings=` kwarg that newer `mcp` versions rejected.
+
+#### Binance MCP — preferred CEX klines source
+
+Tier-1 for any Binance call per `references/tool-inventory.md`'s data-source preference order. Without it, ARIA falls back to the public REST endpoint (works but unauthenticated and slower on busy intervals).
+
+Install any Binance MCP implementation you trust — ARIA auto-detects any `mcp__*binance*__*` match in session.
+
+#### CoinGecko MCP — preferred global/OHLC data source
+
+Tier-1 for global market data, OHLC, and simple prices.
+
+```bash
+claude mcp add --transport sse --scope user coingecko https://mcp.api.coingecko.com/mcp
+```
+
+### 🔵 Optional — nice-to-have fallbacks
+
+| MCP | When it helps | How to install |
+|---|---|---|
+| **Perplexity** (`mcp__*perplexity*__*`) | Last-resort tier-3 fallback when direct `web_fetch` returns 402/403/ECONNREFUSED and every other alternative fails. Social/meta/site-content only — **never used for price, OHLCV, balances, or execution quotes.** | Install any Perplexity MCP server — requires a Perplexity AI API key. Example: `claude mcp add --scope user -e PERPLEXITY_API_KEY=<key> perplexity -- npx -y server-perplexity-ask` |
+| **Helius** (`mcp__*helius*__*`) | Alternative on-chain Solana RPC when solscan/gmgn return 403. Tier-2 fallback for token metadata and wallet lookups. | Any Helius MCP server — requires a Helius API key from [helius.dev](https://helius.dev) |
+| **Prediction-market MCPs** (Polymarket, Kalshi, Metaculus, Manifold) | First-class intelligence signals in Phase 5 and Phase 6 when configured via Clodds. Each adds a data-point to the composite score. | Configured inside Clodds, no separate MCP install |
+
+### Detection and graceful degradation
+
+The skill's lazy-loaded `references/link-resolution.md` defines the full error-code dispatch table with ordered fallback tiers. When an optional MCP is missing, the next tier in the chain runs automatically. You can verify which MCPs are detected in your session with:
+```bash
+claude mcp list
+```
+Look for ARIA-relevant names (`clodds`, `alpaca`, `twitterapi`, `coingecko`, any `*binance*`, any `*perplexity*`, any `*helius*`).
 
 ---
 
@@ -162,15 +217,24 @@ aria-trading-skill/
 ├── skills/
 │   ├── aria-trading/
 │   │   ├── SKILL.md                       ← Core skill (triggers + workflow)
-│   │   └── references/
+│   │   └── references/                    ← Lazy-loaded on demand (token-minimal)
 │   │       ├── aria-protocol.md           ← 9-phase analysis pipeline
+│   │       ├── alpaca-paper.md            ← Paper-trading playbook (Alpaca)
 │   │       ├── event-system.md            ← Two-tier automation architecture
-│   │       ├── tool-inventory.md          ← Full Clodds tool reference (100+ tools)
+│   │       ├── examples.md                ← Copy-paste prompt library
+│   │       ├── indicators.md              ← RSI/MACD/BB/VWAP/EMA/ATR/Stoch/OBV formulas
+│   │       ├── journal-system.md          ← Signal journal + status/stats commands
+│   │       ├── link-resolution.md         ← 402/403/404 fallback dispatch + MCP tier routing
+│   │       ├── predictive-scan.md         ← Forward-looking pre-pump scanner
+│   │       ├── pumpfun-social-playbook.md ← Creator audit, KOL tiers, X-status handler §1.4
+│   │       ├── report-checklist.md        ← Per-phase compliance checklist
+│   │       ├── tool-inventory.md          ← Full tool reference (100+ tools, MCP preference chains)
 │   │       └── trade-execution.md         ← Trade formats, SL/TP/trailing rules
 │   └── configure/
 │       └── SKILL.md                       ← Setup skill (/aria-trading:configure)
 ├── prompts/
 │   └── claude-desktop-system-prompt.md    ← System prompt for Claude Desktop/Mobile
+├── reports/                               ← Generated analysis reports + journal.jsonl
 └── README.md
 ```
 
