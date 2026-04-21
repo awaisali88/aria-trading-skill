@@ -799,6 +799,8 @@ For analyses where no trade is executed (recommendation only), still render the 
 
 Every report — single-token or multi-token — must end with this actionable summary block. This is the tl;dr the user reads first. It must be grounded in the **real wallet balances** pulled in Phase 8, not hypothetical framings.
 
+> 📐 **Report structure is canonical.** Before assembling the report, load `references/report-template.md` — it fixes the section order, emoji-headed phase anchors, the 🚨 Executive Verdict block at the top, the 🧾 Tool-Call Audit, the 🎯 ARIA Signal Block, the 📓 Journal note, and the ⚖️ Disclaimer. The reference implementation is `reports/analysis-pub-2026-04-21-1530.md`. Phase 10 (this block) sits near the end — after Phase 9 Alerts and before the Tool-Call Audit.
+
 **Pull all balances before rendering:**
 ```
 clodds_solana_balance                    → SOL + SPL token balances
