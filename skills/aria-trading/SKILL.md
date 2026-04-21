@@ -107,7 +107,7 @@ For full details on any tool, load `references/tool-inventory.md`.
 `web_search` (X/Twitter, news, opinion.trade) · `web_fetch` (DexScreener, Birdeye, Solscan)
 
 **Web research (use-if-present):**
-- `mcp__*twitterapi*__*` — **TwitterAPI.io live proxy (tier-1 for any X/Twitter fetch when installed).** Paid per-call (~$0.00015/call), ~$0.01 per full memecoin analysis. Returns full JSON for tweets, replies, retweeters, user profiles, search results — use as the primary source for the §1.4 X-status handler, Phase 5 post-velocity, and KOL tier tagging. Tag as `(via TwitterAPI.io)`. Install: `claude mcp add --scope user -e TWITTER_API_KEY=<key> twitterapi -- uvx twitterapi-mcp`.
+- `mcp__*twitterapi*__*` — **TwitterAPI.io live proxy (tier-1 for any X/Twitter fetch when installed).** Paid per-call (~$0.00015/call), ~$0.01 per full memecoin analysis. Returns full JSON for tweets, replies, retweeters, user profiles, search results — use as the primary source for the §1.4 X-status handler, Phase 5 post-velocity, and KOL tier tagging. Tag as `(via TwitterAPI.io)`. Install (pin `mcp==1.6.0` because the upstream package 0.1.4 passes a `settings=` kwarg that newer `mcp` versions rejected): `claude mcp add-json --scope user twitterapi '{"command":"uvx","args":["--with","mcp==1.6.0","twitterapi-mcp"],"env":{"TWITTER_API_KEY":"<key>"}}'`.
 - `mcp__*perplexity*__*` / `mcp__*pplx*__*` — **Perplexity AI (tier-3 last-resort for blocked pages).** Used **only** when direct `web_fetch` returns 402/403/ECONNREFUSED and tier-1/tier-2 alternates in `link-resolution.md §1` also fail. **Social/meta/site-content only — never for price, OHLCV, live balances, or execution quotes.** Tag as `(via Perplexity)`.
 
 **On-chain & portfolio:**
