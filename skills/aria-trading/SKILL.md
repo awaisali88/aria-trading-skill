@@ -38,8 +38,8 @@ metadata:
 > | `clodds_edge` (prediction-only) | `clodds_opinion` + `clodds_ai_strategy` + `web_search "[token] catalyst [month year]"` |
 > | `clodds_analytics` (0 opportunities) | `clodds_pumpfun stats/trades/bonding` + `web_fetch dexscreener` |
 > | `clodds_feeds` (empty) | `web_search "[asset] volume spike OR liquidation OR breakout today"` |
-> | `web_fetch x.com/*` returns 402 / 403 | Nitter mirror rotation (`link-resolution.md` §2) → Perplexity `mcp__*perplexity*__*` if present → `web_search` |
-> | `web_fetch x.com/<handle>/status/<id>` (status URL, not profile) | **Run the X-STATUS HANDLER** (`pumpfun-social-playbook.md §1.4`) — extract @handle from path, fetch tweet via nitter/Perplexity, analyze engagement. **NEVER skip as "status not account."** |
+> | `web_fetch x.com/*` returns 402 / 403 | **`mcp__*twitterapi*__*` MCP (TwitterAPI.io, paid tier) if installed** → `cdn.syndication.twimg.com/tweet-result` (free public JSON) → Nitter mirror rotation (`link-resolution.md` §3) → Perplexity `mcp__*perplexity*__*` if present → `web_search` |
+> | `web_fetch x.com/<handle>/status/<id>` (status URL, not profile) | **Run the X-STATUS HANDLER** (`pumpfun-social-playbook.md §1.4`) — extract @handle from path, then fetch the tweet via: TwitterAPI.io MCP (`get_tweet` + `tweet://<id>/replies`) → syndication API → nitter → Perplexity. Analyze engagement (likes/replies/reposts) and reply sentiment. **NEVER skip as "status not account."** |
 > | `web_fetch solscan.io/*` returns 403 | `public-api.solscan.io/token/meta?tokenAddress=<mint>` + `public-api.solscan.io/account?account=<wallet>` → Helius/Birdeye MCP (use-if-present) → Perplexity |
 > | `web_fetch gmgn.ai/*` returns 403 | `api.gmgn.ai/api/v1/token_info/sol/<mint>` or `/wallet/sol/<wallet>` (alt host) → Birdeye public API → Perplexity |
 > | `clodds_pumpfun holders/trades/chart` returns 404 | GeckoTerminal `/tokens/<mint>/info` + `/pools/<pool>/trades?limit=100` → DexScreener `token-pairs/v1/solana/<mint>` |
@@ -69,7 +69,7 @@ For detailed reference material, load the relevant file from `references/` as ne
 - **Signal journal + performance tracker → `references/journal-system.md` (load when the user asks to "show journal", "status check", "journal stats", or when auto-appending after any Phase 10 Action Summary)**
 - **Pump.fun social playbook → `references/pumpfun-social-playbook.md` (load at the start of Phase 5 for any Memecoin-Profile token — creator audit, post velocity, KOL tiers, shill detection, X-status URL handler §1.4, Discord public-API verification)**
 - **Alpaca paper-trading playbook → `references/alpaca-paper.md` (load whenever the user says "paper trade", "dry run", "simulate", or when `ARIA_EXECUTION_MODE=paper` resolves for the current execution — contains tool map, supported-asset allowlist, order-type rules, simulated-fill branch for unsupported tokens)**
-- **Link resolution playbook → `references/link-resolution.md` (load ONLY when a `web_fetch` returns 402/403/404/ECONNREFUSED or a Clodds tool returns "Unknown skill"/help-text — contains the error-code → alt-host dispatch table, Nitter mirror rotation, Perplexity fallback tier, and the 4-attempt stop rule. Lazy-loaded on purpose — healthy runs never need it.)**
+- **Link resolution playbook → `references/link-resolution.md` (load ONLY when a `web_fetch` returns 402/403/404/ECONNREFUSED or a Clodds tool returns "Unknown skill"/help-text — contains the error-code → alt-host dispatch table, the TwitterAPI.io MCP tier-1 section (§2), Nitter mirror rotation (§3), Perplexity fallback tier (§4), and the 4-attempt stop rule (§5). Lazy-loaded on purpose — healthy runs never need it.)**
 
 ---
 
@@ -106,8 +106,9 @@ For full details on any tool, load `references/tool-inventory.md`.
 `clodds_divergence` · `clodds_metrics` · `clodds_analytics`
 `web_search` (X/Twitter, news, opinion.trade) · `web_fetch` (DexScreener, Birdeye, Solscan)
 
-**Web research (use-if-present — tier-3 fallback for blocked pages):**
-`mcp__*perplexity*__*` / `mcp__*pplx*__*` — Perplexity AI. Used **only** when direct `web_fetch` returns 402/403/ECONNREFUSED and the tier-1/tier-2 alternates in `link-resolution.md §1` also fail. **Social/meta/site-content only — never for price, OHLCV, live balances, or execution quotes.** Tag any datapoint sourced this way as `(via Perplexity)` in the rendered block.
+**Web research (use-if-present):**
+- `mcp__*twitterapi*__*` — **TwitterAPI.io live proxy (tier-1 for any X/Twitter fetch when installed).** Paid per-call (~$0.00015/call), ~$0.01 per full memecoin analysis. Returns full JSON for tweets, replies, retweeters, user profiles, search results — use as the primary source for the §1.4 X-status handler, Phase 5 post-velocity, and KOL tier tagging. Tag as `(via TwitterAPI.io)`. Install (pin `mcp==1.6.0` because the upstream package 0.1.4 passes a `settings=` kwarg that newer `mcp` versions rejected): `claude mcp add-json --scope user twitterapi '{"command":"uvx","args":["--with","mcp==1.6.0","twitterapi-mcp"],"env":{"TWITTER_API_KEY":"<key>"}}'`.
+- `mcp__*perplexity*__*` / `mcp__*pplx*__*` — **Perplexity AI (tier-3 last-resort for blocked pages).** Used **only** when direct `web_fetch` returns 402/403/ECONNREFUSED and tier-1/tier-2 alternates in `link-resolution.md §1` also fail. **Social/meta/site-content only — never for price, OHLCV, live balances, or execution quotes.** Tag as `(via Perplexity)`.
 
 **On-chain & portfolio:**
 `clodds_whale_tracking` · `clodds_token_security` · `clodds_solana_balance`
