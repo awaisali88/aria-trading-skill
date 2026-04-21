@@ -6,6 +6,23 @@ This file is the structural fix for multi-token reports — it stops the model f
 
 ---
 
+## Report structure (walk this section BEFORE the per-phase checks)
+
+The canonical structure lives in `references/report-template.md` with `reports/analysis-pub-2026-04-21-1530.md` as the reference implementation. Every report follows it.
+
+- [ ] Title block rendered: `# ARIA Analysis — $TICKER (Name) · [Profile]` + Date + Mint/Symbol + Source URL + Profile classification + Pipeline line
+- [ ] 🚨 **Executive Verdict block at the top** (blockquote) — Signal · Conviction · Composite score · 2–5 sentence thesis · HARD STOPs flagged · Phase-suppression state noted
+- [ ] 🌍 **Macro Context Snapshot table** near the top (F&G, BTC/ETH/SOL 24h+7d, Total MCap, BTC Dominance, Polymarket hits, ETF flows) with a closing Macro verdict line
+- [ ] Every phase uses its canonical emoji header: 🧠 Phase 1 · 📱 Phase 5 · 📊 Phase 2 · 📈 Phase 3 · 🔗 Phase 4 · 🧭 Phase 6 · 📋 Phase 7 · 💼 Phase 8 · 🔔 Phase 9 · 📊 Phase 10
+- [ ] Phase order correct for profile: **Memecoin** runs 1 → 5 → 2 → 3 → 4 → 6 → 7 → 8 → 9 → 10. **Major** runs 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10.
+- [ ] 🧾 **Tool-Call Audit table** near the end — every tool call accounted for with ✅/❌/⚠ + error code + fallback path
+- [ ] Any `UNKNOWN` label anywhere in the report has a corresponding audit-table row citing which `link-resolution.md §1` tiers were attempted
+- [ ] 🎯 **ARIA Signal Block** (ASCII box) rendered after the audit table
+- [ ] 📓 **Journal note** — auto-append state + override hint for below-threshold SKIPs
+- [ ] ⚖️ **Disclaimer** at the bottom (mandatory, non-negotiable)
+
+---
+
 ## Profile tagging (do this FIRST)
 
 - [ ] Every token classified as **Memecoin Profile** or **Major Profile** per the ASSET-CLASS PROFILE SELECTION rules in `aria-protocol.md`
