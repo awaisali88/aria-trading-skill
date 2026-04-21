@@ -48,15 +48,23 @@ All other phases (1 Security · 2 Market · 4 On-chain · 6 Macro · 8 Trade pla
 - LP lock status (locked / unlocked / lock duration)
 - Top 5 wallet concentration % (or top 10 if top 5 unavailable)
 
-**Fallback chain when `clodds_token_security` errors / returns "Unknown skill":** run *every* step below, do not skip:
+**Fallback chain when `clodds_token_security` errors / returns "Unknown skill":** run *every* step below, do not skip. On any 402/403/404/ECONNREFUSED, dispatch via `references/link-resolution.md § §1` for the public-API alt host before advancing:
 ```
 1. web_fetch https://rugcheck.xyz/tokens/<mint>            → rug-risk score + LP lock + mint authority
+   (on sparse response — risks:[], topHolders:null — flag SPARSE, do NOT count as clean)
 2. web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info
                                                            → supply, top holders %, freeze authority
-3. web_fetch https://solscan.io/token/<mint>#holders       → top 10 holder distribution
-4. clodds_pumpfun token <mint>                             → creator wallet, bonding state
+3. web_fetch https://public-api.solscan.io/token/meta?tokenAddress=<mint>
+                                                           → top 10 holder distribution (403-bypass alt host, not solscan.io UI)
+4. web_fetch https://honeypot.is/api/v2/scan?network=solana&address=<mint>
+                                                           → honeypot probability + simulated buy/sell
+5. web_fetch https://api.gopluslabs.io/api/v1/token_security/solana?contract_addresses=<mint>
+                                                           → authority states + transfer-fee hooks (Token-2022 especially)
+6. clodds_pumpfun token <mint>                             → creator wallet, bonding state
+7. Perplexity (if mcp__*perplexity*__* available): research query on the mint
+                                                           → last-resort synthesis from cached/archive sources
 ```
-If 3 of 4 fallbacks also fail AND the token is <7 days old, render this banner and cap recommended size to 1% of memecoin bag regardless of TA verdict:
+If 5 of 7 fallbacks also fail AND the token is <7 days old, render this banner and cap recommended size to 1% of memecoin bag regardless of TA verdict:
 ```
 ⚠ INSUFFICIENT SECURITY DATA — TREAT AS PRESUMED-RISK
    Cannot verify mint authority, LP lock, or holder distribution.
@@ -452,14 +460,22 @@ For Memecoin-Profile tokens, this block **replaces** the standard 7-line sentime
 
 **Load `references/pumpfun-social-playbook.md` at the start of this block** — that file contains the operational procedures (creator-X audit, post-velocity math, KOL tier thresholds, shill-detection heuristics, Telegram verification). This section just defines the rendered output.
 
+> **If the creator-X link is a status URL** (`x.com/<handle>/status/<id>` instead of `x.com/<handle>`) — run the **X-STATUS URL HANDLER** per `pumpfun-social-playbook.md §1.4` before anything else. Extract the @handle from the path, fetch the tweet itself via the Nitter mirror rotation (or Perplexity if mirrors fail), and feed the tweet's engagement (likes/replies/reposts + reply sentiment) into Factor 1 scoring. **Never mark a status URL as "status not account" and drop the handle — the handle IS in path segment [0] and the tweet itself is a narrative-ignition signal.**
+
+> **On any 402/403/404/ECONNREFUSED below**, dispatch via `references/link-resolution.md § §1` (public-API alt hosts → Nitter mirrors → Perplexity) before labeling any field `UNKNOWN`.
+
 **Tools (run in this order):**
 ```
 1. Resolve creator X handle:
    clodds_pumpfun token <mint>                    → find creator wallet + "Links" block (Twitter/TG/website)
+   If the Twitter link matches x.com/<handle>/status/<id>:
+       → run pumpfun-social-playbook.md §1.4 X-STATUS HANDLER
+       → extract handle from path[0], fetch status via nitter/Perplexity
    If Twitter link missing: web_search "[token name] [mint first 8 chars] site:x.com"
                             + web_search "<ticker> solana memecoin"
-2. Fetch creator X stats:
+2. Fetch creator X stats (402/403 → Nitter mirror rotation per link-resolution.md §2):
    web_fetch https://x.com/<handle>                → followers, account age, post history
+   On 402/403: web_fetch https://nitter.net/<handle>  (then rotate through §2 mirrors)
    web_search "<handle> rug OR scam OR prior"      → prior-rug check
 3. Compute post velocity:
    web_search "$<TICKER> site:x.com"               → count results with date filter last 1h, 24h, 7d

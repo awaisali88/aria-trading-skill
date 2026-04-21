@@ -90,7 +90,12 @@ This file is the structural fix for multi-token reports — it stops the model f
 **If Memecoin Profile:** (expanded 15-line Deep-Dive block, runs AFTER Phase 1 BEFORE Phase 2)
 - [ ] `references/pumpfun-social-playbook.md` loaded at start of this block
 - [ ] Expanded 15-line Pump.fun Social Deep-Dive rendered
-- [ ] Creator X handle resolved via §1 of playbook (5-fallback chain) — UNKNOWN only after all 5 fail, with list of attempts
+- [ ] Creator X handle resolved via §1.1 of playbook (8-fallback chain incl. public-API alt hosts, Nitter, Perplexity) — UNKNOWN only after all 8 fail, with list of attempts in audit table
+- [ ] If creator X link is an `x.com/<handle>/status/<id>` URL → §1.4 X-STATUS HANDLER executed (handle extracted from path, tweet fetched via nitter/Perplexity, engagement/reply-sentiment fed into Factor 1). Status URLs are NEVER skipped as "status not account".
+- [ ] Any `solscan.io` / `gmgn.ai` 403 routed through `link-resolution.md §1` public-API alt hosts before labeling creator wallet UNKNOWN
+- [ ] Any Discord link verified via `discord.com/api/v10/invites/<code>?with_counts=true` (not just the masked landing page)
+- [ ] Any project-website ECONNREFUSED routed through `web.archive.org` wayback before labeling DEAD
+- [ ] Every non-200 alternative attempted is listed in the final Tool-call audit table with its specific error code
 - [ ] Creator account age + prior-rug scan (§1.3 of playbook) executed
 - [ ] Post velocity computed: **both** 1h/24h-avg AND 24h/7d-avg ratios (not just one)
 - [ ] KOL mentions enumerated by TIER (🐋 >1M / 🦈 100K-1M / 🐠 10K-100K / 🦐 <10K) with follower counts — not a flat "KOL: yes"

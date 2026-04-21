@@ -38,6 +38,16 @@ metadata:
 > | `clodds_edge` (prediction-only) | `clodds_opinion` + `clodds_ai_strategy` + `web_search "[token] catalyst [month year]"` |
 > | `clodds_analytics` (0 opportunities) | `clodds_pumpfun stats/trades/bonding` + `web_fetch dexscreener` |
 > | `clodds_feeds` (empty) | `web_search "[asset] volume spike OR liquidation OR breakout today"` |
+> | `web_fetch x.com/*` returns 402 / 403 | Nitter mirror rotation (`link-resolution.md` §2) → Perplexity `mcp__*perplexity*__*` if present → `web_search` |
+> | `web_fetch x.com/<handle>/status/<id>` (status URL, not profile) | **Run the X-STATUS HANDLER** (`pumpfun-social-playbook.md §1.4`) — extract @handle from path, fetch tweet via nitter/Perplexity, analyze engagement. **NEVER skip as "status not account."** |
+> | `web_fetch solscan.io/*` returns 403 | `public-api.solscan.io/token/meta?tokenAddress=<mint>` + `public-api.solscan.io/account?account=<wallet>` → Helius/Birdeye MCP (use-if-present) → Perplexity |
+> | `web_fetch gmgn.ai/*` returns 403 | `api.gmgn.ai/api/v1/token_info/sol/<mint>` or `/wallet/sol/<wallet>` (alt host) → Birdeye public API → Perplexity |
+> | `clodds_pumpfun holders/trades/chart` returns 404 | GeckoTerminal `/tokens/<mint>/info` + `/pools/<pool>/trades?limit=100` → DexScreener `token-pairs/v1/solana/<mint>` |
+> | Project website returns ECONNREFUSED / DNS fail | `web.archive.org/web/*/<url>` wayback → Perplexity `site:<domain>` → only then mark DEAD |
+> | `discord.gg/<invite>` landing page masks counts | `discord.com/api/v10/invites/<invite>?with_counts=true` (public JSON) → Perplexity |
+> | `farside.co.uk` ETF flows blocked | `theblock.co/data/crypto-markets/spot-btc-etfs` → `cointelegraph.com/tags/spot-bitcoin-etf` → Perplexity |
+>
+> **Any non-200 must route through `references/link-resolution.md § §1` dispatch table before any `UNKNOWN` label is rendered.** Log every attempt (successful or not) in the final Tool-call audit table with its specific error code. Token-minimalism cap: max 4 calls per URL (2 tier-1 + 1 tier-2 + 1 Perplexity) before falling through to UNKNOWN.
 >
 > Always deliver the complete 9-phase ARIA Protocol and final ARIA Signal Block. Missing one source is never an excuse to skip the report — fall back, cross-reference, and synthesize.
 
@@ -57,8 +67,9 @@ For detailed reference material, load the relevant file from `references/` as ne
 - **Report compliance checklist → `references/report-checklist.md` (load before delivering any analysis report — walk every item)**
 - **Forward-looking predictive scanner → `references/predictive-scan.md` (load when the user asks for "top N about to go up", "pre-pump scan", "what's about to pump", "hunt for next-hour movers", or "rescan")**
 - **Signal journal + performance tracker → `references/journal-system.md` (load when the user asks to "show journal", "status check", "journal stats", or when auto-appending after any Phase 10 Action Summary)**
-- **Pump.fun social playbook → `references/pumpfun-social-playbook.md` (load at the start of Phase 5 for any Memecoin-Profile token — creator audit, post velocity, KOL tiers, shill detection)**
+- **Pump.fun social playbook → `references/pumpfun-social-playbook.md` (load at the start of Phase 5 for any Memecoin-Profile token — creator audit, post velocity, KOL tiers, shill detection, X-status URL handler §1.4, Discord public-API verification)**
 - **Alpaca paper-trading playbook → `references/alpaca-paper.md` (load whenever the user says "paper trade", "dry run", "simulate", or when `ARIA_EXECUTION_MODE=paper` resolves for the current execution — contains tool map, supported-asset allowlist, order-type rules, simulated-fill branch for unsupported tokens)**
+- **Link resolution playbook → `references/link-resolution.md` (load ONLY when a `web_fetch` returns 402/403/404/ECONNREFUSED or a Clodds tool returns "Unknown skill"/help-text — contains the error-code → alt-host dispatch table, Nitter mirror rotation, Perplexity fallback tier, and the 4-attempt stop rule. Lazy-loaded on purpose — healthy runs never need it.)**
 
 ---
 
@@ -94,6 +105,9 @@ For full details on any tool, load `references/tool-inventory.md`.
 `clodds_signals` · `clodds_news` · `clodds_feeds` · `clodds_market_index`
 `clodds_divergence` · `clodds_metrics` · `clodds_analytics`
 `web_search` (X/Twitter, news, opinion.trade) · `web_fetch` (DexScreener, Birdeye, Solscan)
+
+**Web research (use-if-present — tier-3 fallback for blocked pages):**
+`mcp__*perplexity*__*` / `mcp__*pplx*__*` — Perplexity AI. Used **only** when direct `web_fetch` returns 402/403/ECONNREFUSED and the tier-1/tier-2 alternates in `link-resolution.md §1` also fail. **Social/meta/site-content only — never for price, OHLCV, live balances, or execution quotes.** Tag any datapoint sourced this way as `(via Perplexity)` in the rendered block.
 
 **On-chain & portfolio:**
 `clodds_whale_tracking` · `clodds_token_security` · `clodds_solana_balance`
