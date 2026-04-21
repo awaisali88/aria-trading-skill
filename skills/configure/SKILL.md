@@ -30,7 +30,17 @@ Check the current connection state and guide the user:
 
 2. **MCP Token** — check if `CLODDS_MCP_TOKEN` is set. If set, show first 8 characters masked (e.g., `abc12345...`). If not, show "not configured".
 
-3. **Next steps** based on state:
+3. **Execution mode** — check `ARIA_EXECUTION_MODE` env var. If set, show its value (`paper` or `live`). If unset, show `paper (default — first-install safe mode)`. Explain how to change it:
+   ```
+   To default to LIVE:  export ARIA_EXECUTION_MODE=live   (then restart Claude Code)
+   To default to PAPER: export ARIA_EXECUTION_MODE=paper  (or just unset the var)
+   Per-trade override always wins: say "paper trade X" or "live trade X" in any message.
+   ```
+   This command does NOT manage Alpaca API credentials — those are set at the user's Claude Code level (outside this plugin).
+
+4. **Alpaca MCP presence** — check whether any `mcp__alpaca__*` tool appears in the current session's tool list. If yes, show `Alpaca MCP: connected (paper-trading ready)`. If no, show `Alpaca MCP: not detected — install & connect the Alpaca MCP at the Claude Code level to enable paper trading`.
+
+5. **Next steps** based on state:
    - Nothing configured → tell the user:
      ```
      Run: /aria-trading:configure <your-clodds-url> <your-token>

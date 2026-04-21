@@ -31,8 +31,10 @@ Every journal line is a complete JSON object with these fields:
   "token":                 "yn",
   "symbol":                "$YN",
   "mint":                  "<Solana mint address OR null if CEX>",
-  "venue":                 "PumpSwap / Raydium / Binance / Bybit / MEXC / Hyperliquid / Jupiter",
-  "chain":                 "solana / ethereum / base / bsc / arbitrum / cex",
+  "venue":                 "PumpSwap / Raydium / Binance / Bybit / MEXC / Hyperliquid / Jupiter / alpaca-paper-stock / alpaca-paper-crypto / alpaca-simulated",
+  "chain":                 "solana / ethereum / base / bsc / arbitrum / cex / us-equity",
+  "mode":                  "live | paper | simulated",
+  "alpaca_order_id":       "<uuid for mode=paper, null for mode=live|simulated>",
   "signal":                "BUY-NOW | BUY-WATCH | HOLD | SELL-NOW | SKIP",
   "conviction":            "HIGH | MEDIUM | LOW",
   "horizon":               "intraday (1h-4h) | swing (1-7d) | position (>7d)",
@@ -66,7 +68,9 @@ Every journal line is a complete JSON object with these fields:
 
 **ID format:** `YYYY-MM-DD-<token>-<signal-lowercase>-<seq>` where `<seq>` is a 3-digit zero-padded counter unique to that (date, token, signal) tuple. First entry of the day for $YN BUY-WATCH → `2026-04-18-yn-buy-watch-001`.
 
-**Null handling:** Use `null` for any field not applicable (e.g. `mint: null` for CEX tokens, `trigger_condition: null` for BUY-NOW, `position_size_sol: null` for CEX trades).
+**Null handling:** Use `null` for any field not applicable (e.g. `mint: null` for CEX tokens, `trigger_condition: null` for BUY-NOW, `position_size_sol: null` for CEX trades, `alpaca_order_id: null` when `mode != "paper"`).
+
+**Back-compat:** Historical rows (written before the `mode` / `alpaca_order_id` fields were added) do not have these keys. Readers MUST treat a missing `mode` as `"live"` and a missing `alpaca_order_id` as `null`. Do NOT rewrite historical rows to add the new fields — only new entries carry them.
 
 ### Signal values
 
@@ -259,7 +263,8 @@ Status check summary — checked <N> open entries at <timestamp>:
 - Expectancy = win_rate × avg_winner_% + loss_rate × avg_loser_%
 - Best pick (by %), Worst pick (by %)
 - Avg hold time (days/hours, winners vs losers separately)
-- Per-venue breakdown (pump.fun / Raydium / Binance / etc. — N picks, win rate, expectancy)
+- Per-venue breakdown (pump.fun / Raydium / Binance / Alpaca-paper-stock / Alpaca-paper-crypto / alpaca-simulated / etc. — N picks, win rate, expectancy)
+- **Per-mode breakdown** (LIVE / PAPER / SIMULATED — compare ARIA's real-money performance vs paper-account performance vs on-chain-mid simulations; flag divergence >10pp between LIVE and PAPER win rates as a possible data-quality or slippage issue)
 - Per-signal-type breakdown (BUY-NOW vs BUY-WATCH hit rate)
 - Per-conviction breakdown (HIGH / MEDIUM / LOW — do HIGH conviction picks actually outperform?)
 - Recent trend — last-30-day win rate vs all-time
@@ -283,7 +288,15 @@ By venue:
   pump.fun:      <N> picks · <X>% WR · expectancy +<X>%
   Raydium:       <N> picks · <X>% WR · expectancy +<X>%
   Binance spot:  <N> picks · <X>% WR · expectancy +<X>%
+  Alpaca stock:  <N> picks · <X>% WR · expectancy +<X>%
+  Alpaca crypto: <N> picks · <X>% WR · expectancy +<X>%
   ...
+
+By mode (critical — tells you if live vs paper behave the same):
+  LIVE:          <N> picks · <X>% WR · expectancy +<X>%
+  PAPER:         <N> picks · <X>% WR · expectancy +<X>%   ← Alpaca paper real fills
+  SIMULATED:     <N> picks · <X>% WR · expectancy +<X>%   ← on-chain mid, journal-only
+  Divergence:    ±<X>pp WR gap between LIVE and PAPER     ← flag if >10pp
 
 By signal type:
   BUY-NOW:       <N> picks · <X>% WR · expectancy +<X>%

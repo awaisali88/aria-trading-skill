@@ -12,7 +12,8 @@ Load this file when running **Phase 5 Memecoin Expanded Block** for any pump.fun
 
 ### Step 1.1 — Resolve creator handle
 
-Try the sources in this order:
+Try the sources in this order. On any HTTP 402/403/404/ECONNREFUSED at any step, dispatch via `references/link-resolution.md § §1` for the public-API alt-host / Perplexity fallback before advancing.
+
 ```
 1. clodds_pumpfun token <mint>
    → The response's "Links:" block lists Twitter / Telegram / Website if the deployer set them.
@@ -22,20 +23,37 @@ Try the sources in this order:
    web_fetch https://pump.fun/coin/<mint>
    → Look for an X / Twitter icon in the header block. Extract @handle.
 
-3. Solscan creator wallet:
-   web_fetch https://solscan.io/account/<creator_wallet>
-   → Check wallet "Labels" or linked-account sections.
+3. IF the extracted X link matches x.com/<handle>/status/<id> (status URL, not profile):
+   → Jump to §1.4 X-STATUS URL HANDLER below. Extract @handle from path segment [0]
+     and proceed with §1.2 on that handle. Do NOT mark as "status not account" —
+     the handle IS in the URL path.
 
-4. GMGN creator profile:
-   web_fetch https://gmgn.ai/sol/address/<creator_wallet>
-   → GMGN mirrors on-chain identity data.
+4. Solscan creator wallet (403-routed):
+   Tier 1:  web_fetch https://solscan.io/account/<creator_wallet>
+   On 403:  web_fetch https://public-api.solscan.io/account?account=<creator_wallet>
+   On 403:  try Helius MCP if present (mcp__*helius*__*) or Perplexity per link-resolution.md
 
-5. Direct search:
-   web_search "<mint first 8 chars> site:x.com"
+5. GMGN creator profile (403-routed):
+   Tier 1:  web_fetch https://gmgn.ai/sol/address/<creator_wallet>
+   On 403:  web_fetch https://api.gmgn.ai/api/v1/wallet/sol/<creator_wallet>  (alt host)
+   On 403:  Perplexity per link-resolution.md § §1
+
+6. Nitter mirror search (when direct X.com is blocked):
+   Per link-resolution.md § §2 mirror rotation:
+   web_fetch https://nitter.net/search?q=%24<TICKER>
+   → Scan top 20 results for posts that reference the mint or ticker with creator-style
+     framing ("I just deployed", "new launch", "CA:"). Extract @handle of author.
+
+7. Perplexity (if mcp__*perplexity*__* is available):
+   "Who deployed Solana token <mint> with ticker <TICKER>? Return the creator's
+    X handle if publicly known. Cite the retrieval source."
+
+8. Direct search:
+   web_search "<mint first 8 chars> OR <ticker> site:x.com"
    web_search "<ticker> creator site:x.com"
 ```
 
-If all 5 fail → the creator X handle is **UNKNOWN**. Render `Creator X: UNKNOWN (5 fallbacks failed)` in the expanded block and cap Phase 7 Factor 2 (Creator/KOL audit) at 3/15.
+If all 8 fail → the creator X handle is **UNKNOWN**. Render `Creator X: UNKNOWN (8 fallbacks attempted)` in the expanded block, list which tiers were tried in the Tool-call audit table, and cap Phase 7 Factor 2 (Creator/KOL audit) at 3/15.
 
 ### Step 1.2 — Verify handle legitimacy
 
@@ -75,6 +93,73 @@ web_fetch https://gmgn.ai/sol/address/<creator_wallet>
 - **1-2 prior tokens, still alive with holders** → green (serial legit dev)
 - **1+ prior token with rug-pull signature** (creator dumped >50%, LP pulled, chart went to zero) → **HARD STOP** — zero Factor 2, flag in report, suppress Phase 8 trade plan per aria-protocol.md rules
 - **Handle recently renamed** (e.g. via X handle-history check) → yellow flag, document the prior handle
+
+### Step 1.4 — X-STATUS URL HANDLER
+
+**Trigger:** the creator-link resolution in §1.1 produced a URL of shape
+`x.com/<handle>/status/<status_id>` or `twitter.com/<handle>/status/<status_id>`.
+
+**The mistake to avoid:** treating it as "a status link, not an account" and dropping the handle. The `<handle>` segment IS the creator's X handle — it just happens to be embedded in a deep-link to a specific tweet. The tweet itself is ALSO a high-signal artifact (launch announcement engagement = narrative-ignition proxy).
+
+**Procedure:**
+
+```
+a) Parse the URL:
+   - handle      = path segment [0]  (strip "@" if present)
+   - status_id   = path segment [2]
+
+b) Run §1.2 (handle legitimacy) on the EXTRACTED handle.
+   This gives follower count, account age, bio, post count — same as if
+   §1.1 had returned x.com/<handle> directly.
+
+c) Fetch the status itself (rotate tiers on 402/403/5xx):
+
+   Tier 1:  web_fetch https://nitter.net/<handle>/status/<status_id>
+            On 5xx / refused → advance through link-resolution.md § §2 mirror rotation.
+
+   Tier 2:  web_fetch https://x.com/<handle>/status/<status_id>
+            Often 402 but worth 1 try — some IPs / times succeed.
+
+   Tier 3:  Perplexity (if mcp__*perplexity*__* present):
+            "Return the full text, posted UTC date, likes, reposts, replies,
+             and top-3 reply handles for <URL>. If behind paywall, use
+             nitter/cache/archive mirrors."
+
+   Tier 4:  web_search "\"<status_id>\" site:x.com OR site:nitter.net"
+            Last resort — surfaces any quote-tweets or archives.
+
+d) Extract from the response:
+   - tweet_text                       (full, not truncated)
+   - posted_at                        (UTC timestamp)
+   - likes, reposts, replies, bookmarks
+   - mentioned @handles and $CASHTAGS
+   - top-3 replies: {handle, text first 100 chars, reply sentiment}
+
+e) Feed into Phase 5 scoring:
+   - Engagement ≥ 1,000 likes AND ≥ 100 replies within 24h of posting
+     → counts as §6.3 narrative-ignition signal (thread-velocity spike)
+     → +5 to Factor 1 (Social, /25)
+   - Reply sentiment >60% bullish (positive language, emojis like 🚀📈💎)
+     → +3 to Factor 1
+   - Reply sentiment >80% bot-spam (3+ copy-pasted replies, low-follower authors,
+     default profile photos)
+     → trigger §4 red-flag pattern #1/#4 → MANIPULATED classification
+   - Any mentioned handle with >100K followers → tier-tag per §3 and count as KOL
+     mention for Factor 1.
+
+f) Render as one sub-line in the 15-line Phase 5 block:
+   "Creator status tweet: <N likes · N replies · N reposts> — <sentiment read>"
+   Example: "Creator status tweet: 47 likes · 3 replies · 2 reposts — dead
+             (engagement <1% of expected for a real launch announcement)"
+
+g) Audit table: record every tier attempted in the final Tool-call audit with
+   the specific error code and URL used.
+```
+
+**Edge cases:**
+- If the URL uses `/status/` but path segment [0] is `i` or `intent` (e.g. `x.com/intent/tweet`) — that's a compose intent, not a real tweet. Mark as `malformed creator link` and continue §1.1 at step 4.
+- If the tweet is from a different handle than the one pump.fun lists as creator (common when devs RT a KOL to inflate legitimacy) — flag `status author ≠ claimed creator handle`, and treat the claimed handle with extra suspicion.
+- If the status returns "Tweet not found / deleted" via nitter — that's a **red flag per §7 item #3** (creator deleted old tweets).
 
 ---
 
@@ -210,9 +295,40 @@ If 3+ 🦐 accounts post identical copy within 60 seconds of each other, that is
 
 **Activity quality check:** if member count is high but the group is set to read-only or only the admin posts, it's a held-community-hostage setup — red flag.
 
-### Discord
+### Discord procedure (public-API tier)
 
-Same procedure via `web_fetch <discord_invite_url>`. Discord is less common on pump.fun tokens; absent Discord alone isn't a red flag.
+The invite landing page at `discord.gg/<code>` is usually JS-rendered and the member count is hidden. Use Discord's own public API instead:
+
+```
+a) Extract invite code from discord.gg/<code> or discord.com/invite/<code>
+
+b) Tier 1: web_fetch https://discord.com/api/v10/invites/<code>?with_counts=true
+   → Returns public JSON including:
+     - approximate_member_count
+     - approximate_presence_count    (members online right now)
+     - guild.name
+     - guild.description
+     - guild.verification_level
+     - channel.name                  (which channel the invite leads to)
+   → No auth required. Works even when the landing page is behind Cloudflare.
+
+c) Tier 2: web_fetch https://discord.gg/<code>
+   → Sometimes the HTML still exposes counts in <meta> tags; parse og:description.
+
+d) Tier 3: Perplexity (if present):
+   "Discord server discord.gg/<code> — member count, activity level, topic,
+    any known associations with crypto tokens"
+
+e) If all 3 tiers fail:
+   → Label "Discord: unverifiable (3 tiers failed)" — NOT "dead link".
+     Absence of confirmation ≠ evidence of death. Log attempts in audit table.
+```
+
+**Interpretation:**
+- Large `approximate_member_count` but very low `approximate_presence_count` (< 0.5%)
+  → red flag — bought/botted membership, no real activity.
+- `verification_level: 0` and recent-creation guild → fresh low-effort server, weight lower.
+- Discord is less common than Telegram on pump.fun tokens; absent Discord alone is **not** a red flag — only verified-dead or verified-botted servers are.
 
 ---
 
