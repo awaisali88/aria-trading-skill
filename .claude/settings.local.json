@@ -1,21 +1,21 @@
 {
   "permissions": {
     "allow": [
-      "mcp__plugin_aria-trading_clodds__clodds_market_index",
-      "mcp__plugin_aria-trading_clodds__clodds_binance_spot_balance",
-      "mcp__plugin_aria-trading_clodds__clodds_binance_futures_balance",
-      "mcp__plugin_aria-trading_clodds__clodds_solana_balance",
-      "mcp__plugin_aria-trading_clodds__clodds_signals",
-      "mcp__plugin_aria-trading_clodds__clodds_research",
-      "mcp__plugin_aria-trading_clodds__clodds_news",
-      "mcp__plugin_aria-trading_clodds__clodds_whale_tracking",
-      "mcp__plugin_aria-trading_clodds__clodds_ai_strategy",
-      "mcp__plugin_aria-trading_clodds__clodds_binance_spot_price",
-      "mcp__plugin_aria-trading_clodds__clodds_feeds",
-      "mcp__plugin_aria-trading_clodds__clodds_analytics",
-      "mcp__plugin_aria-trading_clodds__clodds_edge",
-      "mcp__plugin_aria-trading_clodds__clodds_divergence",
-      "mcp__plugin_aria-trading_clodds__clodds_binance_spot",
+      "mcp__plugin_aria-trading_aria__aria_market_index",
+      "mcp__plugin_aria-trading_aria__aria_binance_spot_balance",
+      "mcp__plugin_aria-trading_aria__aria_binance_futures_balance",
+      "mcp__plugin_aria-trading_aria__aria_solana_balance",
+      "mcp__plugin_aria-trading_aria__aria_signals",
+      "mcp__plugin_aria-trading_aria__aria_research",
+      "mcp__plugin_aria-trading_aria__aria_news",
+      "mcp__plugin_aria-trading_aria__aria_whale_tracking",
+      "mcp__plugin_aria-trading_aria__aria_ai_strategy",
+      "mcp__plugin_aria-trading_aria__aria_binance_spot_price",
+      "mcp__plugin_aria-trading_aria__aria_feeds",
+      "mcp__plugin_aria-trading_aria__aria_analytics",
+      "mcp__plugin_aria-trading_aria__aria_edge",
+      "mcp__plugin_aria-trading_aria__aria_divergence",
+      "mcp__plugin_aria-trading_aria__aria_binance_spot",
       "mcp__alpaca__get_account_info",
       "mcp__alpaca__get_all_positions",
       "mcp__alpaca__get_open_position",
@@ -36,7 +36,7 @@
       "WebFetch"
     ],
     "deny": [
-      "mcp__plugin_aria-trading_clodds__clodds_x_research"
+      "mcp__plugin_aria-trading_aria__aria_x_research"
     ]
   }
 }

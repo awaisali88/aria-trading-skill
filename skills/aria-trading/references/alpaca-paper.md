@@ -126,7 +126,7 @@ mcp__alpaca__place_stock_order   # or place_crypto_order
   time_in_force:   "gtc"
 ```
 
-Activation-price semantics: Alpaca activates the trail as soon as the order is placed. If the user wants "activate trailing only at +30%", ARIA must poll `get_open_position` (via `clodds_monitoring` or an ARIA-side status check) and submit the trailing order only after the unrealized PnL crosses +30%.
+Activation-price semantics: Alpaca activates the trail as soon as the order is placed. If the user wants "activate trailing only at +30%", ARIA must poll `get_open_position` (via `aria_monitoring` or an ARIA-side status check) and submit the trailing order only after the unrealized PnL crosses +30%.
 
 ---
 
@@ -161,8 +161,8 @@ When the user asks to paper-trade an asset Alpaca cannot execute (pump.fun mint,
 Sequence:
 
 1. **Quote the asset** at the current on-chain mid price:
-   - pump.fun bonding curve: `clodds_pumpfun quote <mint> <amount> buy` (returns exact SOL-per-token at current curve state).
-   - PumpSwap / Raydium / Orca / Jupiter: `clodds_jupiter_quote` or `clodds_solana_quote`.
+   - pump.fun bonding curve: `aria_pumpfun quote <mint> <amount> buy` (returns exact SOL-per-token at current curve state).
+   - PumpSwap / Raydium / Orca / Jupiter: `aria_jupiter_quote` or `aria_solana_quote`.
    - GeckoTerminal pool mid as fallback: `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=1&limit=1` → use close price.
 2. **Simulate the fill** at that quote price (zero slippage assumption; flag in the output).
 3. **Render the confirmation** with `Mode: SIMULATED` and an explicit banner: *"(simulated fill — asset not on Alpaca paper; tracked in journal only, no order placed)"*.
@@ -178,7 +178,7 @@ No `mcp__alpaca__*` calls happen in this branch. No order is ever sent. The row 
 
 Same 7-step flow as live close (`trade-execution.md` → CLOSING A POSITION) but:
 
-- Balance check: `mcp__alpaca__get_open_position <symbol>` instead of `clodds_bags`.
+- Balance check: `mcp__alpaca__get_open_position <symbol>` instead of `aria_bags`.
 - Cancel outstanding SL/TP/trailing orders for this symbol via `mcp__alpaca__cancel_order_by_id` (iterate the child order IDs stored in the journal row).
 - Close via `mcp__alpaca__close_position <symbol>` (liquidates full qty) OR `mcp__alpaca__close_position <symbol> <percentage>` for partial.
 - Log realized P&L and update the journal row's state to `CLOSED_MANUAL` or `CLOSED_WON`/`CLOSED_LOST` depending on context.

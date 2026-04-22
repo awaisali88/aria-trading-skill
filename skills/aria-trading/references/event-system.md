@@ -1,19 +1,19 @@
-# ARIA Event System — Two-Tier Clodds Automation
+# ARIA Event System — Two-Tier ARIA Automation
 
-No TradingView. No external webhooks. Everything runs inside Clodds.
+No TradingView. No external webhooks. Everything runs inside ARIA.
 
 ---
 
 ## ARCHITECTURE
 
 ```
-TIER 1 — CLODDS AUTO-EXECUTES (no Claude needed, runs 24/7)
-  Configured via: clodds_automation + clodds_triggers
+TIER 1 — ARIA AUTO-EXECUTES (no Claude needed, runs 24/7)
+  Configured via: aria_automation + aria_triggers
   Fires:  Stop loss · TP1 sell · Trailing stop · DCA schedule
   Notifies: Slack after execution
 
 TIER 2 — NOTIFY + ARIA DECIDES (requires Claude session)
-  Configured via: clodds_alerts
+  Configured via: aria_alerts
   Fires:  TP2/TP3 · Volume spikes · Whale moves · New signals
   Flow:   Alert → Slack notification → open Claude → "check my alerts" → ARIA analyzes → Awais confirms → executes
 ```
@@ -77,10 +77,10 @@ NEW_OPP (for watchlist tokens, no position):
 
 **Step 1 — Pull all state:**
 ```
-clodds_monitoring        → all alerts fired since last session
-clodds_alerts            → current alert states
-clodds_portfolio_positions → all open positions and status
-clodds_portfolio_pnl     → current P&L per position
+aria_monitoring        → all alerts fired since last session
+aria_alerts            → current alert states
+aria_portfolio_positions → all open positions and status
+aria_portfolio_pnl     → current P&L per position
 ```
 
 **Step 2 — Categorize each fired alert:**
@@ -91,13 +91,13 @@ clodds_portfolio_pnl     → current P&L per position
 
 **Step 3 — For each existing position with fired alert:**
 ```
-clodds_pumpfun stats <mint>  → fresh price/volume
-clodds_whale_tracking        → new whale activity?
-clodds_metrics               → on-chain health changed?
-clodds_divergence            → price vs on-chain diverging?
+aria_pumpfun stats <mint>  → fresh price/volume
+aria_whale_tracking        → new whale activity?
+aria_metrics               → on-chain health changed?
+aria_divergence            → price vs on-chain diverging?
 web_search "$TOKEN news"     → new catalyst or negative news?
-clodds_signals               → new platform signal?
-clodds_opinion "TOKEN — hold, add, or exit?"
+aria_signals               → new platform signal?
+aria_opinion "TOKEN — hold, add, or exit?"
 ```
 
 **Step 4 — Output position review:**
@@ -150,6 +150,6 @@ Say "hold" to keep current position.
 
 When any position is fully closed (SL hit, manual exit, TP3):
 1. Confirm close executed and price
-2. Deactivate ALL automations for that token: `clodds_automation` + `clodds_alerts` + `clodds_monitoring`
+2. Deactivate ALL automations for that token: `aria_automation` + `aria_alerts` + `aria_monitoring`
 3. Report realized P&L
 4. Update portfolio state

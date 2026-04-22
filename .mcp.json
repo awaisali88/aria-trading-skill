@@ -1,13 +1,13 @@
 {
-  "clodds": {
+  "aria": {
     "type": "stdio",
     "command": "npx",
     "args": [
       "-y",
       "mcp-remote",
-      "${CLODDS_MCP_URL}/mcp",
+      "${ARIA_MCP_URL}/mcp",
       "--header",
-      "Authorization: Bearer ${CLODDS_MCP_TOKEN}"
+      "Authorization: Bearer ${ARIA_MCP_TOKEN}"
     ]
   }
 }

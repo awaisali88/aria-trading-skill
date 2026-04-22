@@ -1,6 +1,6 @@
 {
   "name": "aria-trading",
-  "description": "ARIA — crypto analyst and active trader. Market scanning, token analysis, trade execution on Binance/Bybit/MEXC/Hyperliquid/Jupiter/pump.fun with automated SL/TP/trailing stop management via Clodds MCP.",
+  "description": "ARIA — crypto analyst and active trader. Market scanning, token analysis, trade execution on Binance/Bybit/MEXC/Hyperliquid/Jupiter/pump.fun with automated SL/TP/trailing stop management via ARIA MCP.",
   "version": "1.0.0",
   "author": {
     "name": "awaisali88"

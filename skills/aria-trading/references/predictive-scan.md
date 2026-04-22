@@ -14,33 +14,33 @@ Default N = 5 if the user doesn't specify.
 
 ```
 1. pump.fun surface (Solana memecoins):
-   clodds_pumpfun trending            → top 20 by 24h vol
-   clodds_pumpfun hot                 → top 20 by 1h tx activity
-   clodds_pumpfun gainers             → top 20 24h gainers
-   clodds_pumpfun new-hot             → top 10 hottest fresh launches
-   clodds_pumpfun graduating          → bonding curve >60%
-   clodds_pumpfun koth                → King of the Hill candidates
-   clodds_pumpfun volatile            → top volatility plays
+   aria_pumpfun trending            → top 20 by 24h vol
+   aria_pumpfun hot                 → top 20 by 1h tx activity
+   aria_pumpfun gainers             → top 20 24h gainers
+   aria_pumpfun new-hot             → top 10 hottest fresh launches
+   aria_pumpfun graduating          → bonding curve >60%
+   aria_pumpfun koth                → King of the Hill candidates
+   aria_pumpfun volatile            → top volatility plays
 
 2. Solana DEX broader surface:
    web_fetch https://api.geckoterminal.com/api/v2/networks/solana/trending_pools?page=1
 
 3. CEX surface (for BTC/alt momentum):
-   clodds_signals                     → live breakout/reversal signals
+   aria_signals                     → live breakout/reversal signals
    Binance 24hr ticker sweep (prefer MCP, fall back to REST — see tool-inventory.md):
      1. Preferred: Binance MCP get_24hr_ticker / get_ticker_24hr (returns all symbols)
      2. Fallback: web_fetch https://api.binance.com/api/v3/ticker/24hr
      → sort by priceChangePercent, take top 30 and bottom 30 (reversal candidates)
 
-4. Clodds intelligence:
-   clodds_edge "what's about to move next hour crypto"
-   clodds_ai_strategy "short-term momentum setups right now"
+4. ARIA intelligence:
+   aria_edge "what's about to move next hour crypto"
+   aria_ai_strategy "short-term momentum setups right now"
 
 5. Prediction-market + opinion surface (cross-reference for catalyst signals):
-   clodds_polymarket_markets "crypto"
-   clodds_kalshi_markets "crypto"
-   clodds_metaculus "crypto"
-   clodds_trading_manifold "crypto"
+   aria_polymarket_markets "crypto"
+   aria_kalshi_markets "crypto"
+   aria_metaculus "crypto"
+   aria_trading_manifold "crypto"
    → note any candidate token with a token-specific event market
      (implied prob ≥ 60% bullish outcome = catalyst-bullish cross-reference)
    → note divergences (Polymarket bullish but Manifold retail bearish = smart-money edge)
@@ -60,7 +60,7 @@ Remove any candidate that fails ANY gate:
 | Already too hot | Up >40% in last 1h (move is halfway done) |
 | Manipulation risk | Vol/mcap ratio > 300% |
 | Too new | Token age < 1h (insufficient data) |
-| Known rug | flagged by `clodds_token_security` or `rugcheck.xyz` |
+| Known rug | flagged by `aria_token_security` or `rugcheck.xyz` |
 | Security failure | Mint authority not revoked · top 5 holders >50% |
 
 Post-filter universe: typically 30–60 candidates.
@@ -85,7 +85,7 @@ Memecoin Profile  (pump.fun / PumpSwap / fresh Solana DEX):
 Major Profile  (BTC/ETH/XRP/CEX-listed alts):
   Binance klines (MCP-preferred) at 5m, 15m, 1h, 4h
   GeckoTerminal pool trades (if Solana DEX-listed Major) or
-    clodds_binance_spot_history for CEX order-tape
+    aria_binance_spot_history for CEX order-tape
   Headline news scan on <TICKER> + token name
   Optional: KOL scan if time permits (nice-to-have for Majors)
 ```
@@ -101,7 +101,7 @@ Weights are chosen so no single hot factor can carry the score — **confluence 
 | 3 | Volume acceleration | 15 | 1h vol ≥ 1.5× of preceding-6h avg AND OBV rising (not just price) |
 | 4 | Whale net buy (1h) | 15 | Net USD from trades >$1K is positive AND ≥ $10K |
 | 5 | Momentum divergence | 10 | Bullish RSI divergence on 15m/1h (price made lower low, RSI made higher low) |
-| 6 | Narrative ignition | 10 | X post velocity last 1h ≥ 3× rolling-24h avg · OR fresh catalyst news in last 4h (listing, KOL pick, partnership, token-2.0) · OR fresh Polymarket/Kalshi/Metaculus market for this token w/ implied prob >60% bullish · OR `clodds_opinion` returns BUY-NOW on this token |
+| 6 | Narrative ignition | 10 | X post velocity last 1h ≥ 3× rolling-24h avg · OR fresh catalyst news in last 4h (listing, KOL pick, partnership, token-2.0) · OR fresh Polymarket/Kalshi/Metaculus market for this token w/ implied prob >60% bullish · OR `aria_opinion` returns BUY-NOW on this token |
 | 7 | Social acceleration | 5 | Active community + ≥1 KOL mention (>100K followers) in last 24h |
 | 8 | Holder health | 5 | Top 10 <40% · mint/freeze renounced · creator hasn't sold >20% in last 7d |
 | 9 | Macro tailwind | 5 | BTC/SOL green on 1h · F&G rising vs yesterday's close |
@@ -116,7 +116,7 @@ For pump.fun / PumpSwap / fresh Solana DEX tokens. **Social is the leading indic
 |---|--------|--------|---------------------------------|
 | 1 | **Twitter/X social velocity** | **25** | Post velocity last 1h ≥ 3× of 24h avg AND velocity 24h ≥ 2× of 7d avg (both tiers). If ≥ 1.5× only on one tier → partial (10-17 pts). VIRAL classification per `pumpfun-social-playbook.md` full points. |
 | 2 | **Creator / KOL audit** | **15** | Creator X handle resolved + ≥90d account age + zero prior rugs + ≥1 🦈 (100K-1M) KOL mention in 24h. Zero the factor if creator unresolved after 3 fallbacks OR prior-rug detected OR MANIPULATED flag. |
-| 3 | **Narrative ignition** | **15** | Fresh catalyst in last 4h: CEX listing rumor, 🐋 KOL pick, partnership, narrative breakout (first-of-kind meme) · OR `clodds_opinion` returns BUY-NOW · OR Polymarket/Metaculus implied prob >60% on token-specific question. |
+| 3 | **Narrative ignition** | **15** | Fresh catalyst in last 4h: CEX listing rumor, 🐋 KOL pick, partnership, narrative breakout (first-of-kind meme) · OR `aria_opinion` returns BUY-NOW · OR Polymarket/Metaculus implied prob >60% on token-specific question. |
 | 4 | **On-chain whale + holder flow** | **15** | Top 10 <25% AND net accum >$10K/1h from trades >$1K AND holder count growing >10%/24h. |
 | 5 | **Holder health + security** | **10** | Mint+freeze revoked (from GeckoTerminal info) + LP locked (PumpSwap standard) + zero external insider-cluster report + creator wallet <20% supply with no recent sells. |
 | 6 | **Chart peak-check** | **10** | Per Phase 3 Memecoin Peak-Check Mode (15m + 1h only): pre-peak base OR new-leg-forming with expanding volume. Zero if blow-off top confirmed / broken down. |
@@ -221,7 +221,7 @@ Same as the standard 9-phase protocol (see `aria-protocol.md` Phase 10). Pull li
 
 - 🟢 **BUY / ADD** = all BUY-NOW scored candidates, with venue, size, entry, SL, TP
 - 🟡 **HOLD-WATCH** = all WAIT-FOR-TRIGGER candidates, with trigger level + size ready to deploy
-- 🔴 **SELL NOW** = any existing position whose thesis just broke (detected via cross-reference with `clodds_bags`)
+- 🔴 **SELL NOW** = any existing position whose thesis just broke (detected via cross-reference with `aria_bags`)
 - ⚪ **SKIP** = top tail from Step 5
 - Deployment % + aggregate SL risk + **Top next-action** one-liner
 
@@ -273,7 +273,7 @@ When the user invokes the scanner repeatedly (e.g. every 20–30 minutes), produ
 - Run all four universe surfaces in parallel (Step 1) — single message, parallel tool calls
 - Apply the pre-filter gates strictly (Step 2) — no score, no analysis on disqualified candidates
 - Show the Pre-Pump Signal Score breakdown for every top-N result so the user can audit the reasoning
-- Ground all sizes in the real `clodds_*_balance` output (Phase 8 rules apply)
+- Ground all sizes in the real `aria_*_balance` output (Phase 8 rules apply)
 - Include both a BUY-NOW list and a WAIT-FOR-TRIGGER list — most scan runs will have a mix
 - Save the report to `reports/pre-pump-scan-YYYY-MM-DD-HHMM.md` before delivering so the next rescan can produce a delta
 - End with the Phase 10 Action Summary block

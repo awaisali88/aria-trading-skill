@@ -20,10 +20,10 @@ Array of candles, each candle is:
       0      1     2    3    4      5
 ```
 
-**pump.fun** (`clodds_pumpfun chart <mint> --interval <tf>`)
+**pump.fun** (`aria_pumpfun chart <mint> --interval <tf>`)
 Array of `{timestamp, open, high, low, close, volume}` objects. Works for bonding-curve tokens and freshly graduated PumpSwap tokens.
 
-**Any Solana DEX pool** (GeckoTerminal — free public API, no auth — use for Raydium / Orca / Meteora / Jupiter / graduated pump.fun tokens, or any Solana token that `clodds_pumpfun chart` fails on):
+**Any Solana DEX pool** (GeckoTerminal — free public API, no auth — use for Raydium / Orca / Meteora / Jupiter / graduated pump.fun tokens, or any Solana token that `aria_pumpfun chart` fails on):
 ```
 # Step 1 — find the top pool for a token mint:
 web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/pools
