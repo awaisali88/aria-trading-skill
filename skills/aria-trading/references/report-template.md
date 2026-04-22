@@ -236,7 +236,7 @@ Per `event-system.md`. For SUPPRESSED trade plans, state "No alerts armed. No au
 
 **Mandatory closing block.** Four sub-blocks in this order:
 
-1. **Wallet snapshot (live)** — real balance calls from `clodds_*_balance` tools
+1. **Wallet snapshot (live)** — real balance calls from `aria_*_balance` tools
 2. **Action lists** — one row per asset, grouped by priority:
    - 🟢 BUY / ADD
    - 🟡 HOLD

@@ -15,7 +15,7 @@ Load this file when running **Phase 5 Memecoin Expanded Block** for any pump.fun
 Try the sources in this order. On any HTTP 402/403/404/ECONNREFUSED at any step, dispatch via `references/link-resolution.md § §1` for the public-API alt-host / Perplexity fallback before advancing.
 
 ```
-1. clodds_pumpfun token <mint>
+1. aria_pumpfun token <mint>
    → The response's "Links:" block lists Twitter / Telegram / Website if the deployer set them.
    → If Twitter link is present: extract @handle from the URL.
 
@@ -319,7 +319,7 @@ If 3+ 🦐 accounts post identical copy within 60 seconds of each other, that is
 ### Telegram procedure
 
 ```
-1. Fetch the TG invite URL from clodds_pumpfun token <mint> Links block.
+1. Fetch the TG invite URL from aria_pumpfun token <mint> Links block.
 2. web_fetch <tg_link>
    → If the page returns "tg://... deep link" or the bare invite preview, extract:
      - Group name
@@ -400,8 +400,8 @@ When any ignition signal is detected, upgrade Factor 3 (Narrative ignition) towa
 web_search "<ticker> OR <token name> CEX listing OR announcement"
 web_search "<ticker> partnership site:x.com"
 web_search "<ticker> coindesk OR decrypt OR theblock"
-clodds_polymarket_markets "<ticker>"
-clodds_metaculus "<ticker>"
+aria_polymarket_markets "<ticker>"
+aria_metaculus "<ticker>"
 ```
 
 If any returns a hit dated in the last 4 hours, log it as the ignition timestamp and measure everything else relative to it.

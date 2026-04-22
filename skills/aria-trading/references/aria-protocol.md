@@ -2,7 +2,7 @@
 
 Run all phases in order for every analysis request. Show tool output from each phase before conclusions. Do not skip phases.
 
-> 🔁 **Fallback rule (applies to every phase below):** If a Clodds tool returns empty, unconfigured, or off-topic output (e.g. `clodds_news` returning only political feeds, `clodds_signals` with no sources, `clodds_whale_tracking` with 0 wallets, `clodds_edge` returning prediction-market edges only, `clodds_analytics` with 0 opportunities, `clodds_feeds` empty), **silently fall back** to `web_search` + `web_fetch` on CoinDesk / CoinGecko / The Block / DexScreener / Birdeye / Solscan / X.com and keep the pipeline moving. Never halt or shrink the final report because one source was unconfigured — cross-reference, synthesize, and deliver the full 9-phase analysis every time. `clodds_x_research` is denied at the permission layer; always use `web_search` for X/Twitter.
+> 🔁 **Fallback rule (applies to every phase below):** If a ARIA tool returns empty, unconfigured, or off-topic output (e.g. `aria_news` returning only political feeds, `aria_signals` with no sources, `aria_whale_tracking` with 0 wallets, `aria_edge` returning prediction-market edges only, `aria_analytics` with 0 opportunities, `aria_feeds` empty), **silently fall back** to `web_search` + `web_fetch` on CoinDesk / CoinGecko / The Block / DexScreener / Birdeye / Solscan / X.com and keep the pipeline moving. Never halt or shrink the final report because one source was unconfigured — cross-reference, synthesize, and deliver the full 9-phase analysis every time. `aria_x_research` is denied at the permission layer; always use `web_search` for X/Twitter.
 
 ---
 
@@ -37,7 +37,7 @@ All other phases (1 Security · 2 Market · 4 On-chain · 6 Macro · 8 Trade pla
 
 ## PHASE 1: IDENTITY & SECURITY CHECK
 
-**Tools:** `clodds_token_security` → `clodds_pumpfun token <mint>` → `clodds_research "[token]"` → `web_search "[token name] solana"` → `web_fetch [solscan or pump.fun page]`
+**Tools:** `aria_token_security` → `aria_pumpfun token <mint>` → `aria_research "[token]"` → `web_search "[token name] solana"` → `web_fetch [solscan or pump.fun page]`
 
 **MUST INCLUDE for every token (skipping any item fails the report):**
 - Full name, ticker, mint address, chain, launch date
@@ -48,7 +48,7 @@ All other phases (1 Security · 2 Market · 4 On-chain · 6 Macro · 8 Trade pla
 - LP lock status (locked / unlocked / lock duration)
 - Top 5 wallet concentration % (or top 10 if top 5 unavailable)
 
-**Fallback chain when `clodds_token_security` errors / returns "Unknown skill":** run *every* step below, do not skip. On any 402/403/404/ECONNREFUSED, dispatch via `references/link-resolution.md § §1` for the public-API alt host before advancing:
+**Fallback chain when `aria_token_security` errors / returns "Unknown skill":** run *every* step below, do not skip. On any 402/403/404/ECONNREFUSED, dispatch via `references/link-resolution.md § §1` for the public-API alt host before advancing:
 ```
 1. web_fetch https://rugcheck.xyz/tokens/<mint>            → rug-risk score + LP lock + mint authority
    (on sparse response — risks:[], topHolders:null — flag SPARSE, do NOT count as clean)
@@ -60,7 +60,7 @@ All other phases (1 Security · 2 Market · 4 On-chain · 6 Macro · 8 Trade pla
                                                            → honeypot probability + simulated buy/sell
 5. web_fetch https://api.gopluslabs.io/api/v1/token_security/solana?contract_addresses=<mint>
                                                            → authority states + transfer-fee hooks (Token-2022 especially)
-6. clodds_pumpfun token <mint>                             → creator wallet, bonding state
+6. aria_pumpfun token <mint>                             → creator wallet, bonding state
 7. Perplexity (if mcp__*perplexity*__* available): research query on the mint
                                                            → last-resort synthesis from cached/archive sources
 ```
@@ -91,7 +91,7 @@ Phase 8 trade plan SUPPRESSED. Educational analysis continues below.
 
 ## PHASE 2: LIVE MARKET DATA SNAPSHOT
 
-**Tools:** `clodds_pumpfun stats <mint>` → `clodds_pumpfun bonding <mint>` → `clodds_pumpfun trades <mint>` → `clodds_binance_spot_price` (if CEX-listed) → `clodds_jupiter_quote` (slippage) → `web_fetch dexscreener.com/solana/<mint>`
+**Tools:** `aria_pumpfun stats <mint>` → `aria_pumpfun bonding <mint>` → `aria_pumpfun trades <mint>` → `aria_binance_spot_price` (if CEX-listed) → `aria_jupiter_quote` (slippage) → `web_fetch dexscreener.com/solana/<mint>`
 
 **MUST INCLUDE for every token (every item — skipping any one fails the report):**
 - **Price changes — all five intervals:** 5m / 1h / 6h / 24h / 7d. Fallback chain if any interval is missing from the primary source:
@@ -158,17 +158,17 @@ https://api.binance.com/api/v3/klines?symbol=<SYMBOL>USDT&interval=4h&limit=200
 ```
 Response shape is identical either way: array of `[openTime, open, high, low, close, volume, closeTime, quoteVolume, trades, takerBuyBase, takerBuyQuote, ignore]`. Calculate RSI, MACD, EMA, BB, VWAP, ATR from these arrays directly.
 
-Supplement with `clodds_binance_spot_history <SYMBOL>USDT` for the most recent live trade tape (bid/ask imbalance).
+Supplement with `aria_binance_spot_history <SYMBOL>USDT` for the most recent live trade tape (bid/ask imbalance).
 
 **Solana tokens — decision tree (covers every Solana pair, not just pump.fun):**
 
 1. **Token currently on pump.fun bonding curve or freshly graduated PumpSwap** → primary source:
    ```
-   clodds_pumpfun chart <mint> --interval 1m
-   clodds_pumpfun chart <mint> --interval 5m
-   clodds_pumpfun chart <mint> --interval 15m
-   clodds_pumpfun chart <mint> --interval 1h
-   clodds_pumpfun chart <mint> --interval 4h
+   aria_pumpfun chart <mint> --interval 1m
+   aria_pumpfun chart <mint> --interval 5m
+   aria_pumpfun chart <mint> --interval 15m
+   aria_pumpfun chart <mint> --interval 1h
+   aria_pumpfun chart <mint> --interval 4h
    ```
 
 2. **Any other Solana token (Raydium / Orca / Meteora / Jupiter-only / fully graduated / never-on-pump.fun)** → GeckoTerminal OHLCV API (free, no auth):
@@ -185,7 +185,7 @@ Supplement with `clodds_binance_spot_history <SYMBOL>USDT` for the most recent l
    ```
    Response: `data.attributes.ohlcv_list[]` where each entry is `[timestamp, open, high, low, close, volume]`. Feed directly into every indicator formula in `indicators.md` — no conversion needed.
 
-3. **Try #1 first; on empty/error, fall back to #2.** If a token has *both* a pump.fun pool and a later Raydium/Meteora pool after graduation, `clodds_pumpfun chart` will only reflect the pump.fun pool's activity — prefer GeckoTerminal's top pool (highest liquidity) for post-graduation tokens.
+3. **Try #1 first; on empty/error, fall back to #2.** If a token has *both* a pump.fun pool and a later Raydium/Meteora pool after graduation, `aria_pumpfun chart` will only reflect the pump.fun pool's activity — prefer GeckoTerminal's top pool (highest liquidity) for post-graduation tokens.
 
 4. **Visual confirmation (always include as a chart link, regardless of data source):**
    - `https://birdeye.so/token/<mint>?chain=solana` — embedded TradingView chart with default indicators, works for any Solana token
@@ -368,9 +368,9 @@ The weight the full TA suite would have carried (40-60% of the composite score) 
 
 ## PHASE 4: ON-CHAIN INTELLIGENCE
 
-**Tools:** `clodds_whale_tracking` → `clodds_metrics` → `clodds_divergence` → `clodds_analytics` → `web_fetch birdeye.so/token/<mint>?chain=solana`
+**Tools:** `aria_whale_tracking` → `aria_metrics` → `aria_divergence` → `aria_analytics` → `web_fetch birdeye.so/token/<mint>?chain=solana`
 
-**MUST INCLUDE for every token (every item — use fallback chain when Clodds tools fail / return empty):**
+**MUST INCLUDE for every token (every item — use fallback chain when ARIA tools fail / return empty):**
 - **Top 10 holder concentration % + flag if >40%.** Fallbacks:
   ```
   web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/info     → top holders
@@ -405,21 +405,21 @@ If three or more of the above cannot be filled even after the fallback chain, re
 
 ### Major Profile — standard 7-line block (default)
 
-**Tools:** `web_search "$[TICKER] crypto"` → `web_search "[token name] twitter pump.fun"` → `web_search "[token name] telegram"` → `web_fetch [project X page]` → `web_fetch opinion.trade` → `clodds_news [token]` → `clodds_feeds` → `clodds_opinion "[token] — buy or sell?"` → `clodds_edge "[token] — any asymmetric opportunity?"`
+**Tools:** `web_search "$[TICKER] crypto"` → `web_search "[token name] twitter pump.fun"` → `web_search "[token name] telegram"` → `web_fetch [project X page]` → `web_fetch opinion.trade` → `aria_news [token]` → `aria_feeds` → `aria_opinion "[token] — buy or sell?"` → `aria_edge "[token] — any asymmetric opportunity?"`
 
 **Prediction-market + AI-opinion chain (MANDATORY — run every call on every token analysis):**
 ```
-clodds_polymarket_markets "<TICKER or project name>"
-  → for every hit: clodds_polymarket_orderbook <market_id>
+aria_polymarket_markets "<TICKER or project name>"
+  → for every hit: aria_polymarket_orderbook <market_id>
   → extract implied probability = bestBid_YES / 100 (or mid-market of best bid/ask)
-clodds_kalshi_markets "<TICKER or narrative>"
-  → for every hit: clodds_kalshi_orderbook <market_id>
-clodds_metaculus "<TICKER or narrative>"
-clodds_trading_manifold "<TICKER>"               (retail-weighted play-money forecasts)
-clodds_predictfun / clodds_predictit              (alt-data cross-check — optional; note if divergent)
-clodds_opinion "<TICKER> — buy or sell given current price $X, setup [pattern], 1h Δ ±Y%?"
+aria_kalshi_markets "<TICKER or narrative>"
+  → for every hit: aria_kalshi_orderbook <market_id>
+aria_metaculus "<TICKER or narrative>"
+aria_trading_manifold "<TICKER>"               (retail-weighted play-money forecasts)
+aria_predictfun / aria_predictit              (alt-data cross-check — optional; note if divergent)
+aria_opinion "<TICKER> — buy or sell given current price $X, setup [pattern], 1h Δ ±Y%?"
 ```
-If a Clodds prediction-market tool returns help-text or no results, fall back to `web_fetch polymarket.com/markets/crypto`, `web_fetch kalshi.com/markets/crypto`, or `web_fetch opinion.trade`.
+If a ARIA prediction-market tool returns help-text or no results, fall back to `web_fetch polymarket.com/markets/crypto`, `web_fetch kalshi.com/markets/crypto`, or `web_fetch opinion.trade`.
 
 **MUST RENDER the standardized sentiment block — never skip, never collapse, never replace with prose.** This block is mandatory for every token analyzed:
 
@@ -433,12 +433,12 @@ Shill/manipulation:    Low / Medium / High
 Mainstream coverage:   Yes ([outlet, headline, date]) / None
 Prediction markets:    Polymarket: [N markets · top: "<question>" YES X% / NO Y%]
                        Kalshi: [event + implied prob] / Metaculus: [forecast] / None
-Clodds AI opinion:     🟢 Bullish / 🟡 Neutral / 🔴 Bearish — "<one-line rationale from clodds_opinion>"
+ARIA AI opinion:     🟢 Bullish / 🟡 Neutral / 🔴 Bearish — "<one-line rationale from aria_opinion>"
 ```
 
 **Rendering rules for the two new lines:**
 - **Prediction markets** — if no markets surface from any of polymarket / kalshi / metaculus / manifold for this token, render `None` across the board. Don't omit the line. If hits exist, show the top 1-2 by volume/participation with implied probability extracted from the orderbook.
-- **Clodds AI opinion** — always call `clodds_opinion` with the full context (price, pattern, 1h Δ). Extract bias from the response and render with a short one-liner quoting the core rationale. If the tool errors or returns nothing, render `⚠ clodds_opinion unavailable` — do not omit.
+- **ARIA AI opinion** — always call `aria_opinion` with the full context (price, pattern, 1h Δ). Extract bias from the response and render with a short one-liner quoting the core rationale. If the tool errors or returns nothing, render `⚠ aria_opinion unavailable` — do not omit.
 
 **How to fill the block:**
 - **X post count:** run `web_search "$<TICKER> site:x.com"` and `web_search "[token name] site:x.com"`. Count distinct results from the last 24h. If under 10, mark as `LOW (~N posts)`; if 10–50 mark `MODERATE`; if >50 mark `ACTIVE`. State the count.
@@ -467,7 +467,7 @@ For Memecoin-Profile tokens, this block **replaces** the standard 7-line sentime
 **Tools (run in this order):**
 ```
 1. Resolve creator X handle:
-   clodds_pumpfun token <mint>                    → find creator wallet + "Links" block (Twitter/TG/website)
+   aria_pumpfun token <mint>                    → find creator wallet + "Links" block (Twitter/TG/website)
    If the Twitter link matches x.com/<handle>/status/<id>:
        → run pumpfun-social-playbook.md §1.4 X-STATUS HANDLER
        → extract handle from path[0], fetch status via nitter/Perplexity
@@ -542,7 +542,7 @@ Social signal:        [VIRAL / ACTIVE / MODERATE / DEAD / MANIPULATED]
 
 ## PHASE 6: MACRO CONTEXT
 
-**Tools:** `clodds_market_index` → `clodds_polymarket_markets "crypto"` → `clodds_polymarket_orderbook` → `clodds_binance_spot_price BTCUSDT` → `clodds_binance_spot_price SOLUSDT` → `web_search "crypto market today"` → `web_fetch opinion.trade`
+**Tools:** `aria_market_index` → `aria_polymarket_markets "crypto"` → `aria_polymarket_orderbook` → `aria_binance_spot_price BTCUSDT` → `aria_binance_spot_price SOLUSDT` → `web_search "crypto market today"` → `web_fetch opinion.trade`
 
 **MUST RENDER the macro block once per report (top of the document, after the executive summary).** Every item is required — pull from the explicit URL/tool listed:
 
@@ -552,7 +552,7 @@ Macro snapshot — [DATE] [TIME UTC]
                        ↳ web_fetch https://api.alternative.me/fng/?limit=1
   BTC:                 $XX,XXX  · 24h: ±X.X%  · 7d: ±X.X%
                        ↳ prefer Binance MCP (get_ticker_24hr + get_klines interval=1d limit=8);
-                         fall back to clodds_binance_spot_price BTCUSDT and/or
+                         fall back to aria_binance_spot_price BTCUSDT and/or
                          web_fetch https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1d&limit=8
   SOL:                 $XXX     · 24h: ±X.X%  · 7d: ±X.X%
                        ↳ same preference chain with SOLUSDT (CRITICAL for Solana memecoin trades)
@@ -565,22 +565,22 @@ Macro snapshot — [DATE] [TIME UTC]
                        ① "<question>" — YES X% / NO Y% · 24h vol $Xk
                        ② "<question>" — YES X% / NO Y% · 24h vol $Xk
                        ③ "<question>" — YES X% / NO Y% · 24h vol $Xk
-                       ↳ clodds_polymarket_markets "crypto"
-                       ↳ for each top market: clodds_polymarket_orderbook <id>
+                       ↳ aria_polymarket_markets "crypto"
+                       ↳ for each top market: aria_polymarket_orderbook <id>
                            — implied prob = bestBid_YES / 100 (or mid of bid/ask)
                        ↳ fallback if help-text returned:
                          web_fetch https://polymarket.com/markets/crypto
                          web_search "polymarket crypto odds today"
   Kalshi macro:        [top 2-3: rate decisions / CPI / SEC / ETF events with date + implied prob]
-                       ↳ clodds_kalshi_markets "crypto" + clodds_kalshi_orderbook on top hits
+                       ↳ aria_kalshi_markets "crypto" + aria_kalshi_orderbook on top hits
                        ↳ fallback if help-text returned:
                          web_fetch https://kalshi.com/markets/crypto
                          web_search "Kalshi crypto rate decision market today"
   Metaculus forecasts: [community consensus on 2-3 relevant crypto/macro questions]
-                       ↳ clodds_metaculus "crypto" / clodds_metaculus "BTC" / clodds_metaculus "SOL"
+                       ↳ aria_metaculus "crypto" / aria_metaculus "BTC" / aria_metaculus "SOL"
   Manifold / PredictIt / PredictFun:
                        [alt-data cross-check — flag when divergent from Polymarket by >10pp]
-                       ↳ clodds_trading_manifold / clodds_predictit / clodds_predictfun
+                       ↳ aria_trading_manifold / aria_predictit / aria_predictfun
   Memecoin sector:     🔥 HOT / 🌤 WARM / 🌧 COOLING / 🥶 COLD  — [one-line reason]
   ETF flows:           [BTC/ETH ETF net flow last session, $M]
                        ↳ free source:
@@ -611,7 +611,7 @@ The macro verdict line is what informs Phase 7 factor #10 (Macro alignment).
 > — **Memecoin Profile** → 8-factor Memecoin weights totaling /100 with social dominant (55%) — see `§ Phase 7 — Memecoin Profile Scorecard` below.
 > In both profiles, the final action thresholds (80-100 Strong Buy / 65-79 Buy / 50-64 Spec / 35-49 Avoid / 20-34 Sell / 0-19 Exit) are identical.
 
-Using data from all prior phases + `clodds_opinion "[token] — buy or sell?"`:
+Using data from all prior phases + `aria_opinion "[token] — buy or sell?"`:
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -657,7 +657,7 @@ Using data from all prior phases + `clodds_opinion "[token] — buy or sell?"`:
 - **Whale (6):** 10 = net accum >$50K/24h · 5 = mixed · 0 = net distrib >$50K/24h
 - **Social (7):** 10 = 🟢 + named KOL + active community + Polymarket implied prob >55% bullish · 5 = 🟡 / mixed / no prediction-market data · 0 = 🔴 or dead community OR Polymarket implied prob <40% bullish
 - **Liquidity (8):** 10 = >$10M liq + <0.5% slip @ $1K · 5 = $1–10M · 0 = <$500K
-- **Narrative (9):** 10 = fresh narrative + organic growth + `clodds_opinion` returns bullish + catalyst pipeline · 5 = mature meme / mixed opinion · 0 = exhausted narrative / `clodds_opinion` bearish / no catalyst
+- **Narrative (9):** 10 = fresh narrative + organic growth + `aria_opinion` returns bullish + catalyst pipeline · 5 = mature meme / mixed opinion · 0 = exhausted narrative / `aria_opinion` bearish / no catalyst
 - **Macro (10):** 10 = SUPPORTS · 5 = NEUTRAL · 0 = OPPOSES (from Phase 6 verdict line)
 
 ---
@@ -740,12 +740,12 @@ See `references/trade-execution.md` for full format.
 **MUST CALL a real balance tool BEFORE any allocation recommendation.** Hypothetical phrasings ("on a 10-SOL bag", "if you had $X", "assume a $200 portfolio") are NOT acceptable and constitute a Phase 8 failure.
 
 **Balance check tools by venue (call the right one for the trade venue):**
-- Solana memecoins / pump.fun: `clodds_solana_balance` + `clodds_pumpfun_balance`
-- Binance: `clodds_binance_spot_balance`
-- Bybit: `clodds_bybit_spot_balance`
-- MEXC: `clodds_mexc_spot_balance`
-- Hyperliquid: `clodds_hyperliquid_balance`
-- Multi-venue / "what's my portfolio": `clodds_portfolio_summary` + `clodds_bags` + `clodds_risk`
+- Solana memecoins / pump.fun: `aria_solana_balance` + `aria_pumpfun_balance`
+- Binance: `aria_binance_spot_balance`
+- Bybit: `aria_bybit_spot_balance`
+- MEXC: `aria_mexc_spot_balance`
+- Hyperliquid: `aria_hyperliquid_balance`
+- Multi-venue / "what's my portfolio": `aria_portfolio_summary` + `aria_bags` + `aria_risk`
 
 **Render the balance result at the top of Phase 8:**
 ```
@@ -753,12 +753,12 @@ Balance check — [VENUE] · [DATE] [TIME UTC]
   Available:        X.XX SOL / $X,XXX USDT
   Open positions:   N (showing $X,XXX in $TICKER, $X,XXX in $TICKER...)
   Free for new:     X.XX SOL / $X,XXX
-  Source:           clodds_<venue>_balance (live)
+  Source:           aria_<venue>_balance (live)
 ```
 
 **If the balance tool errors or returns 0**, render this banner instead and continue with sizing as a percentage:
 ```
-⚠ BALANCE UNKNOWN — clodds_<tool> returned [error/0].
+⚠ BALANCE UNKNOWN — aria_<tool> returned [error/0].
   Sizing below shown as % of available capital.
   Replace with real numbers before executing.
 ```
@@ -777,18 +777,18 @@ Then build the trade plan per `references/trade-execution.md` with all of: Entry
 See `references/event-system.md` for full Tier 1 + Tier 2 configuration.
 
 Immediately after every trade:
-- Wire Tier 1: SL auto-close + TP1 auto-sell + trailing stop via `clodds_automation`
-- Wire Tier 2: TP2/volume/whale alerts via `clodds_alerts`
-- Activate: `clodds_monitoring` for continuous position health
+- Wire Tier 1: SL auto-close + TP1 auto-sell + trailing stop via `aria_automation`
+- Wire Tier 2: TP2/volume/whale alerts via `aria_alerts`
+- Activate: `aria_monitoring` for continuous position health
 
 **Every alert command in the report MUST be labeled with its tier.** Use this exact format so the user can see at a glance what auto-executes vs what requires their attention:
 
 ```
-[Tier 1 — auto-execute]  clodds_automation add <token> stop_loss=X tp_ladder=A:30,B:40 trailing=X%
-[Tier 1 — auto-execute]  clodds_automation add <token> tp1_sell pct=30 price=X
-[Tier 2 — notify only]   clodds_alerts     add <token> price>X notify=tg
-[Tier 2 — notify only]   clodds_alerts     add <token> volume_spike 2x notify=sound+tg
-[Tier 2 — notify only]   clodds_alerts     add <token> whale_sell threshold=$50k notify=tg
+[Tier 1 — auto-execute]  aria_automation add <token> stop_loss=X tp_ladder=A:30,B:40 trailing=X%
+[Tier 1 — auto-execute]  aria_automation add <token> tp1_sell pct=30 price=X
+[Tier 2 — notify only]   aria_alerts     add <token> price>X notify=tg
+[Tier 2 — notify only]   aria_alerts     add <token> volume_spike 2x notify=sound+tg
+[Tier 2 — notify only]   aria_alerts     add <token> whale_sell threshold=$50k notify=tg
 ```
 
 For analyses where no trade is executed (recommendation only), still render the proposed alert lines using the same `[Tier X]` labels — that way the user can see exactly what would be wired on a "go".
@@ -803,13 +803,13 @@ Every report — single-token or multi-token — must end with this actionable s
 
 **Pull all balances before rendering:**
 ```
-clodds_solana_balance                    → SOL + SPL token balances
-clodds_binance_spot_balance              → USDT + all spot holdings on Binance
-clodds_bybit_spot_balance                → same for Bybit (if user trades there)
-clodds_mexc_spot_balance                 → same for MEXC
-clodds_hyperliquid_balance               → Hyperliquid perps account
-clodds_portfolio_positions               → all open positions across venues
-clodds_bags                              → held tokens with entry price + unrealized PnL
+aria_solana_balance                    → SOL + SPL token balances
+aria_binance_spot_balance              → USDT + all spot holdings on Binance
+aria_bybit_spot_balance                → same for Bybit (if user trades there)
+aria_mexc_spot_balance                 → same for MEXC
+aria_hyperliquid_balance               → Hyperliquid perps account
+aria_portfolio_positions               → all open positions across venues
+aria_bags                              → held tokens with entry price + unrealized PnL
 ```
 
 **Render this exact block at the very end of the report, before the Disclaimer:**
@@ -819,7 +819,7 @@ clodds_bags                              → held tokens with entry price + unre
 📋 ACTION SUMMARY — [DATE] [TIME UTC]
 ═══════════════════════════════════════════════════════════════
 
-Wallet snapshot (live, from clodds_*_balance):
+Wallet snapshot (live, from aria_*_balance):
   Solana:      X.XX SOL (~$X)   · N SPL positions
   Binance:     $X,XXX USDT      · N spot positions
   Bybit:       $X,XXX USDT      · N positions          (omit row if 0)
@@ -835,7 +835,7 @@ Wallet snapshot (live, from clodds_*_balance):
      SL $X · TP1 $X · TP2 $X · TP3 $X trail X%
   (list up to 5; omit section entirely if no buyable setups)
 
-🟡 HOLD — sell at targets  (positions you already hold, per clodds_bags):
+🟡 HOLD — sell at targets  (positions you already hold, per aria_bags):
   • $[TICKER] (held X units @ $Y.YY avg on [VENUE], unrealized +/-X%):
     — sell 30% at $X (TP1, +X% from avg)
     — sell 40% at $X (TP2, +X%)
@@ -862,9 +862,9 @@ Top next-action (if you can only do one thing today):
 
 **Rules for the Action Summary:**
 1. **Always render.** Even if balance is 0 (BALANCE EMPTY banner from Phase 8), still render the block with zero-balance rows and recommend sizing as % of future-deployed capital.
-2. **Real numbers only.** Every SOL/USDT number must come from a real `clodds_*_balance` call. Hypothetical framings ("at 10-SOL bag") are a failure for this section.
+2. **Real numbers only.** Every SOL/USDT number must come from a real `aria_*_balance` call. Hypothetical framings ("at 10-SOL bag") are a failure for this section.
 3. **BUY lines must name the venue explicitly** — `on pump.fun` / `on Raydium` / `on Binance spot` / `on Hyperliquid perps`. The user needs to know where to click.
-4. **HOLD lines must come from `clodds_bags`** — if the user holds a token mentioned elsewhere in the report, convert the Signal Block's TP/SL into sell-at-price instructions for the existing position. If they don't hold a token, it belongs in BUY/SKIP, not HOLD.
+4. **HOLD lines must come from `aria_bags`** — if the user holds a token mentioned elsewhere in the report, convert the Signal Block's TP/SL into sell-at-price instructions for the existing position. If they don't hold a token, it belongs in BUY/SKIP, not HOLD.
 5. **SELL NOW is reserved for hard exits** — rug flag, trend-broken with SL hit, catalyst confirmed failed. Don't use it for "take some profit" (that goes in HOLD).
 6. **Top next-action is the single most-decisive line** — the user will re-read this tomorrow morning. Make it unambiguous.
 

@@ -1,17 +1,17 @@
 # ARIA Tool Inventory — Complete Reference
 
-All Clodds MCP tools available to ARIA. Load this file when you need the full parameter details for any tool category.
+All ARIA MCP tools available to ARIA. Load this file when you need the full parameter details for any tool category.
 
 ---
 
-## CLODDS AI INTELLIGENCE (call directly — no API key cost)
+## ARIA AI INTELLIGENCE (call directly — no API key cost)
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_research` | Deep AI research on any token, protocol, or narrative |
-| `clodds_opinion` | AI market opinion on a trade thesis or token setup |
-| `clodds_edge` | AI alpha discovery — underpriced setups, narrative gaps |
-| `clodds_ai_strategy` | AI-generated trading strategy for specific conditions |
+| `aria_research` | Deep AI research on any token, protocol, or narrative |
+| `aria_opinion` | AI market opinion on a trade thesis or token setup |
+| `aria_edge` | AI alpha discovery — underpriced setups, narrative gaps |
+| `aria_ai_strategy` | AI-generated trading strategy for specific conditions |
 
 ---
 
@@ -19,13 +19,13 @@ All Clodds MCP tools available to ARIA. Load this file when you need the full pa
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_signals` | Live trading signals — momentum, breakout, reversal alerts |
-| `clodds_news` | Crypto news filtered by token, protocol, or keyword |
-| `clodds_feeds` | Raw data feeds — volume spikes, liquidations, anomalies |
-| `clodds_divergence` | Price-vs-onchain divergence — leading reversal indicator |
-| `clodds_metrics` | On-chain metrics — TVL, active wallets, txn count, fees |
-| `clodds_analytics` | Token/portfolio analytics — wallet behavior, PnL, exposure |
-| `clodds_market_index` | Fear/greed, BTC dominance, altcoin cycle, sector rotation |
+| `aria_signals` | Live trading signals — momentum, breakout, reversal alerts |
+| `aria_news` | Crypto news filtered by token, protocol, or keyword |
+| `aria_feeds` | Raw data feeds — volume spikes, liquidations, anomalies |
+| `aria_divergence` | Price-vs-onchain divergence — leading reversal indicator |
+| `aria_metrics` | On-chain metrics — TVL, active wallets, txn count, fees |
+| `aria_analytics` | Token/portfolio analytics — wallet behavior, PnL, exposure |
+| `aria_market_index` | Fear/greed, BTC dominance, altcoin cycle, sector rotation |
 
 ---
 
@@ -33,22 +33,22 @@ All Clodds MCP tools available to ARIA. Load this file when you need the full pa
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_whale_tracking` | Large wallet moves — accumulation, distribution, smart money |
-| `clodds_token_security` | Rug check — mint authority, LP lock, holder concentration, honeypot |
-| `clodds_solana_balance` | Live SOL + all SPL token balances on connected wallet |
-| `clodds_solana_wallet` | Active wallet address |
-| `clodds_portfolio_summary` | Full portfolio across all connected venues |
-| `clodds_portfolio_pnl` | Real-time P&L per position |
-| `clodds_portfolio_positions` | All open positions across all exchanges |
-| `clodds_portfolio_sync` | Sync portfolio data across all venues |
-| `clodds_bags` | Holdings with entry prices and unrealized P&L |
-| `clodds_risk` | Portfolio risk — concentration, drawdown, correlation |
+| `aria_whale_tracking` | Large wallet moves — accumulation, distribution, smart money |
+| `aria_token_security` | Rug check — mint authority, LP lock, holder concentration, honeypot |
+| `aria_solana_balance` | Live SOL + all SPL token balances on connected wallet |
+| `aria_solana_wallet` | Active wallet address |
+| `aria_portfolio_summary` | Full portfolio across all connected venues |
+| `aria_portfolio_pnl` | Real-time P&L per position |
+| `aria_portfolio_positions` | All open positions across all exchanges |
+| `aria_portfolio_sync` | Sync portfolio data across all venues |
+| `aria_bags` | Holdings with entry prices and unrealized P&L |
+| `aria_risk` | Portfolio risk — concentration, drawdown, correlation |
 
 ---
 
 ## PUMP.FUN INTELLIGENCE
 
-All called as `clodds_pumpfun <subcommand>`:
+All called as `aria_pumpfun <subcommand>`:
 
 | Subcommand | Returns |
 |------------|---------|
@@ -83,24 +83,24 @@ All called as `clodds_pumpfun <subcommand>`:
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_binance_spot_price` | Live Binance spot price (e.g. SOLUSDT, BTCUSDT) |
-| `clodds_bybit_spot_price` | Live Bybit spot price |
-| `clodds_mexc_spot_price` | Live MEXC spot price |
-| `clodds_binance_spot_history` | Binance recent trade history |
-| `clodds_bybit_spot_history` | Bybit recent trade history |
-| `clodds_mexc_spot_history` | MEXC recent trade history |
-| `clodds_binance_spot_orders` | Open orders on Binance account |
-| `clodds_bybit_spot_orders` | Open orders on Bybit account |
-| `clodds_mexc_spot_orders` | Open orders on MEXC account |
-| `clodds_binance_spot_balance` | Binance wallet balances |
-| `clodds_bybit_spot_balance` | Bybit wallet balances |
-| `clodds_mexc_spot_balance` | MEXC wallet balances |
-| `clodds_hyperliquid_balance` | Hyperliquid account balance |
-| `clodds_hyperliquid_positions` | Open Hyperliquid perpetual positions |
-| `clodds_binance_futures_positions` | Open Binance futures positions |
-| `clodds_bybit_futures_positions` | Open Bybit futures positions |
-| `clodds_mexc_futures_positions` | Open MEXC futures positions |
-| `clodds_arbitrage` | Cross-exchange price discrepancy scanner |
+| `aria_binance_spot_price` | Live Binance spot price (e.g. SOLUSDT, BTCUSDT) |
+| `aria_bybit_spot_price` | Live Bybit spot price |
+| `aria_mexc_spot_price` | Live MEXC spot price |
+| `aria_binance_spot_history` | Binance recent trade history |
+| `aria_bybit_spot_history` | Bybit recent trade history |
+| `aria_mexc_spot_history` | MEXC recent trade history |
+| `aria_binance_spot_orders` | Open orders on Binance account |
+| `aria_bybit_spot_orders` | Open orders on Bybit account |
+| `aria_mexc_spot_orders` | Open orders on MEXC account |
+| `aria_binance_spot_balance` | Binance wallet balances |
+| `aria_bybit_spot_balance` | Bybit wallet balances |
+| `aria_mexc_spot_balance` | MEXC wallet balances |
+| `aria_hyperliquid_balance` | Hyperliquid account balance |
+| `aria_hyperliquid_positions` | Open Hyperliquid perpetual positions |
+| `aria_binance_futures_positions` | Open Binance futures positions |
+| `aria_bybit_futures_positions` | Open Bybit futures positions |
+| `aria_mexc_futures_positions` | Open MEXC futures positions |
+| `aria_arbitrage` | Cross-exchange price discrepancy scanner |
 
 ---
 
@@ -110,19 +110,19 @@ These tools are **actively used in Phase 5 (social) and Phase 6 (macro) of every
 
 | Tool | Purpose | When to use |
 |------|---------|-------------|
-| `clodds_polymarket_markets "<query>"` | Search Polymarket — deep liquid crypto event odds | Query by ticker, project name, or narrative on every token analysis + every macro check |
-| `clodds_polymarket_orderbook <market_id>` | Live orderbook — extract implied probability | Run on every market_id surfaced by `_markets` — `impliedProb = bestBid_YES / 100` or mid-market of bid+ask |
-| `clodds_polymarket_positions` | Your open Polymarket positions | Only for portfolio / trade execution |
-| `clodds_polymarket_balance` | Polymarket account balance | Only for trade execution |
-| `clodds_polymarket_buy` / `_sell` | **[TRADE]** Polymarket execution | Only on explicit user execution request |
-| `clodds_kalshi_markets "<query>"` | Kalshi regulated US binary markets — regulatory/macro events | Fed rate decisions, CPI prints, SEC/ETF approvals, macro triggers |
-| `clodds_kalshi_orderbook <market_id>` | Kalshi orderbook depth | Extract implied prob on every relevant market |
-| `clodds_kalshi_positions` / `_balance` / `_buy` / `_sell` | Portfolio + execution | Only when user is trading Kalshi directly |
-| `clodds_metaculus "<query>"` | Metaculus community forecasts | Long-horizon crypto/macro question consensus — use alongside Polymarket to spot retail-vs-analyst divergences |
-| `clodds_trading_manifold "<query>"` | Manifold play-money forecasts (retail-weighted) | Cross-check vs Polymarket — divergence >10pp = tradeable signal |
-| `clodds_predictit` | PredictIt political/economic markets | US political events with crypto spillover (regulation, administration changes) |
-| `clodds_predictfun` | PredictFun alt-data | Optional cross-check |
-| `clodds_opinion "<TICKER> — buy/sell given [context]?"` | **AI-synthesized trade opinion** on the specific setup | MANDATORY on every token analysis — folds into Phase 5 sentiment block + Phase 7 factor #9 |
+| `aria_polymarket_markets "<query>"` | Search Polymarket — deep liquid crypto event odds | Query by ticker, project name, or narrative on every token analysis + every macro check |
+| `aria_polymarket_orderbook <market_id>` | Live orderbook — extract implied probability | Run on every market_id surfaced by `_markets` — `impliedProb = bestBid_YES / 100` or mid-market of bid+ask |
+| `aria_polymarket_positions` | Your open Polymarket positions | Only for portfolio / trade execution |
+| `aria_polymarket_balance` | Polymarket account balance | Only for trade execution |
+| `aria_polymarket_buy` / `_sell` | **[TRADE]** Polymarket execution | Only on explicit user execution request |
+| `aria_kalshi_markets "<query>"` | Kalshi regulated US binary markets — regulatory/macro events | Fed rate decisions, CPI prints, SEC/ETF approvals, macro triggers |
+| `aria_kalshi_orderbook <market_id>` | Kalshi orderbook depth | Extract implied prob on every relevant market |
+| `aria_kalshi_positions` / `_balance` / `_buy` / `_sell` | Portfolio + execution | Only when user is trading Kalshi directly |
+| `aria_metaculus "<query>"` | Metaculus community forecasts | Long-horizon crypto/macro question consensus — use alongside Polymarket to spot retail-vs-analyst divergences |
+| `aria_trading_manifold "<query>"` | Manifold play-money forecasts (retail-weighted) | Cross-check vs Polymarket — divergence >10pp = tradeable signal |
+| `aria_predictit` | PredictIt political/economic markets | US political events with crypto spillover (regulation, administration changes) |
+| `aria_predictfun` | PredictFun alt-data | Optional cross-check |
+| `aria_opinion "<TICKER> — buy/sell given [context]?"` | **AI-synthesized trade opinion** on the specific setup | MANDATORY on every token analysis — folds into Phase 5 sentiment block + Phase 7 factor #9 |
 
 **Implied-probability extraction rule:**
 ```
@@ -137,7 +137,7 @@ If the orderbook is thin (spread >10pp), flag the prob as `LOW-CONFIDENCE` in th
 - By narrative: `"ETF approval"`, `"rate cut"`, `"CPI"`, `"halving"`
 - By specific event: `"SOL ETF"`, `"BTC 100k"`, `"Ripple vs SEC"`
 
-**Fallback if any Clodds prediction-market tool returns help-text or no results:**
+**Fallback if any ARIA prediction-market tool returns help-text or no results:**
 ```
 web_fetch https://polymarket.com/markets/crypto
 web_fetch https://kalshi.com/markets/crypto
@@ -152,13 +152,13 @@ web_search "polymarket <TICKER> odds today"
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_jupiter_quote` | Live Jupiter swap quote — price impact and slippage |
-| `clodds_solana_quote` | Alternative DEX quote — Raydium, Orca, PumpSwap routing |
-| `clodds_pumpfun_balance` | pump.fun token holdings in wallet |
-| `clodds_pumpfun_buy` | **[TRADE]** Buy pump.fun bonding curve token |
-| `clodds_pumpfun_sell` | **[TRADE]** Sell pump.fun token |
-| `clodds_jupiter_swap` | **[TRADE]** Execute Jupiter swap |
-| `clodds_solana_swap` | **[TRADE]** Alternative Solana swap execution |
+| `aria_jupiter_quote` | Live Jupiter swap quote — price impact and slippage |
+| `aria_solana_quote` | Alternative DEX quote — Raydium, Orca, PumpSwap routing |
+| `aria_pumpfun_balance` | pump.fun token holdings in wallet |
+| `aria_pumpfun_buy` | **[TRADE]** Buy pump.fun bonding curve token |
+| `aria_pumpfun_sell` | **[TRADE]** Sell pump.fun token |
+| `aria_jupiter_swap` | **[TRADE]** Execute Jupiter swap |
+| `aria_solana_swap` | **[TRADE]** Alternative Solana swap execution |
 
 ---
 
@@ -166,12 +166,12 @@ web_search "polymarket <TICKER> odds today"
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_binance_spot_buy` | **[TRADE]** Market or limit buy on Binance spot |
-| `clodds_binance_spot_sell` | **[TRADE]** Market or limit sell on Binance spot |
-| `clodds_bybit_spot_buy` | **[TRADE]** Buy on Bybit spot |
-| `clodds_bybit_spot_sell` | **[TRADE]** Sell on Bybit spot |
-| `clodds_mexc_spot_buy` | **[TRADE]** Buy on MEXC spot |
-| `clodds_mexc_spot_sell` | **[TRADE]** Sell on MEXC spot |
+| `aria_binance_spot_buy` | **[TRADE]** Market or limit buy on Binance spot |
+| `aria_binance_spot_sell` | **[TRADE]** Market or limit sell on Binance spot |
+| `aria_bybit_spot_buy` | **[TRADE]** Buy on Bybit spot |
+| `aria_bybit_spot_sell` | **[TRADE]** Sell on Bybit spot |
+| `aria_mexc_spot_buy` | **[TRADE]** Buy on MEXC spot |
+| `aria_mexc_spot_sell` | **[TRADE]** Sell on MEXC spot |
 
 ---
 
@@ -179,22 +179,22 @@ web_search "polymarket <TICKER> odds today"
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_hyperliquid_long` | **[TRADE]** Open Hyperliquid long (market) |
-| `clodds_hyperliquid_short` | **[TRADE]** Open Hyperliquid short (market) |
-| `clodds_hyperliquid_close` | **[TRADE]** Close Hyperliquid position |
-| `clodds_hyperliquid_leverage` | Set leverage for Hyperliquid symbol |
-| `clodds_binance_futures_long` | **[TRADE]** Open Binance futures long |
-| `clodds_binance_futures_short` | **[TRADE]** Open Binance futures short |
-| `clodds_binance_futures_close` | **[TRADE]** Close Binance futures position |
-| `clodds_binance_futures_leverage` | Set leverage on Binance |
-| `clodds_bybit_futures_long` | **[TRADE]** Open Bybit long |
-| `clodds_bybit_futures_short` | **[TRADE]** Open Bybit short |
-| `clodds_bybit_futures_close` | **[TRADE]** Close Bybit position |
-| `clodds_bybit_futures_leverage` | Set leverage on Bybit |
-| `clodds_mexc_futures_long` | **[TRADE]** Open MEXC long |
-| `clodds_mexc_futures_short` | **[TRADE]** Open MEXC short |
-| `clodds_mexc_futures_close` | **[TRADE]** Close MEXC position |
-| `clodds_mexc_futures_leverage` | Set leverage on MEXC |
+| `aria_hyperliquid_long` | **[TRADE]** Open Hyperliquid long (market) |
+| `aria_hyperliquid_short` | **[TRADE]** Open Hyperliquid short (market) |
+| `aria_hyperliquid_close` | **[TRADE]** Close Hyperliquid position |
+| `aria_hyperliquid_leverage` | Set leverage for Hyperliquid symbol |
+| `aria_binance_futures_long` | **[TRADE]** Open Binance futures long |
+| `aria_binance_futures_short` | **[TRADE]** Open Binance futures short |
+| `aria_binance_futures_close` | **[TRADE]** Close Binance futures position |
+| `aria_binance_futures_leverage` | Set leverage on Binance |
+| `aria_bybit_futures_long` | **[TRADE]** Open Bybit long |
+| `aria_bybit_futures_short` | **[TRADE]** Open Bybit short |
+| `aria_bybit_futures_close` | **[TRADE]** Close Bybit position |
+| `aria_bybit_futures_leverage` | Set leverage on Bybit |
+| `aria_mexc_futures_long` | **[TRADE]** Open MEXC long |
+| `aria_mexc_futures_short` | **[TRADE]** Open MEXC short |
+| `aria_mexc_futures_close` | **[TRADE]** Close MEXC position |
+| `aria_mexc_futures_leverage` | Set leverage on MEXC |
 
 ---
 
@@ -202,15 +202,15 @@ web_search "polymarket <TICKER> odds today"
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_alerts` | Register price/event alert thresholds (Tier 2 — notify) |
-| `clodds_automation` | Configure auto-execution rules (Tier 1 — SL/TP/trailing) |
-| `clodds_triggers` | Conditional event triggers on price, volume, on-chain |
-| `clodds_monitoring` | Continuous position monitoring — check fired alert states |
-| `clodds_strategy` | Build and manage rule-based trading strategies |
-| `clodds_backtest` | Backtest strategy against historical data |
-| `clodds_dca` | DCA scheduling and execution |
-| `clodds_sizing` | Position sizing calculator |
-| `clodds_risk` | Full portfolio risk assessment |
+| `aria_alerts` | Register price/event alert thresholds (Tier 2 — notify) |
+| `aria_automation` | Configure auto-execution rules (Tier 1 — SL/TP/trailing) |
+| `aria_triggers` | Conditional event triggers on price, volume, on-chain |
+| `aria_monitoring` | Continuous position monitoring — check fired alert states |
+| `aria_strategy` | Build and manage rule-based trading strategies |
+| `aria_backtest` | Backtest strategy against historical data |
+| `aria_dca` | DCA scheduling and execution |
+| `aria_sizing` | Position sizing calculator |
+| `aria_risk` | Full portfolio risk assessment |
 
 ---
 
@@ -218,12 +218,12 @@ web_search "polymarket <TICKER> odds today"
 
 | Tool | Purpose |
 |------|---------|
-| `clodds_drift` | Drift Protocol — Solana perpetuals and margin |
-| `clodds_marginfi` | MarginFi — Solana lending and borrowing |
-| `clodds_kamino` | Kamino Finance — Solana liquidity and yield |
-| `clodds_orca` | Orca DEX — concentrated liquidity pools |
-| `clodds_raydium` | Raydium AMM — Solana's primary DEX |
-| `clodds_meteora` | Meteora — dynamic liquidity pools |
+| `aria_drift` | Drift Protocol — Solana perpetuals and margin |
+| `aria_marginfi` | MarginFi — Solana lending and borrowing |
+| `aria_kamino` | Kamino Finance — Solana liquidity and yield |
+| `aria_orca` | Orca DEX — concentrated liquidity pools |
+| `aria_raydium` | Raydium AMM — Solana's primary DEX |
+| `aria_meteora` | Meteora — dynamic liquidity pools |
 
 ---
 
@@ -259,7 +259,7 @@ For **any Binance call** (klines, ticker, price, 24hr stats) and **any CoinGecko
 
 ### Binance
 1. **Preferred — Binance MCP** (any tool matching `mcp__*binance*__*` that the user has connected locally). Common function names to look for: `get_klines`, `klines`, `get_ticker`, `get_24hr_ticker`, `get_price`, `get_symbol_price_ticker`, `get_ticker_24hr`, `get_symbol_ticker`. Use whichever the installed server exposes.
-2. **Fallback A — Clodds** `clodds_binance_spot_price` for simple price queries (Clodds does not expose klines, so klines skip this tier).
+2. **Fallback A — ARIA** `aria_binance_spot_price` for simple price queries (ARIA does not expose klines, so klines skip this tier).
 3. **Fallback B — `web_fetch` public REST** `https://api.binance.com/api/v3/...` (no auth). Only used if tiers 1 and 2 are unavailable or errored.
 
 ### CoinGecko
@@ -290,7 +290,7 @@ Response per candle: `[openTime, open, high, low, close, volume, closeTime, quot
 
 2. **pump.fun bonding-curve / freshly graduated tokens:**
 ```
-clodds_pumpfun chart <mint> --interval <1m|5m|15m|1h|4h>
+aria_pumpfun chart <mint> --interval <1m|5m|15m|1h|4h>
 ```
 
 3. **Any other Solana DEX token (Raydium / Orca / Meteora / Jupiter / fully graduated / never-on-pump.fun)** — GeckoTerminal OHLCV API:
@@ -311,6 +311,6 @@ GeckoTerminal also supports `ethereum`, `base`, `bsc`, `arbitrum`, `polygon_pos`
 
 All three sources feed the same indicator pipeline in `references/indicators.md`.
 
-`clodds_x_research` is denied at the permission layer on this setup — use `web_search` for X/Twitter instead.
+`aria_x_research` is denied at the permission layer on this setup — use `web_search` for X/Twitter instead.
 
-**Fallback for other unconfigured Clodds tools:** if `clodds_news`, `clodds_signals`, `clodds_whale_tracking`, `clodds_edge`, `clodds_analytics`, or `clodds_feeds` return empty/unconfigured responses, use `web_search` + `web_fetch` (CoinDesk, CoinGecko, The Block, DexScreener, Birdeye, Solscan) to fill the gap. Never halt analysis on a single missing source.
+**Fallback for other unconfigured ARIA tools:** if `aria_news`, `aria_signals`, `aria_whale_tracking`, `aria_edge`, `aria_analytics`, or `aria_feeds` return empty/unconfigured responses, use `web_search` + `web_fetch` (CoinDesk, CoinGecko, The Block, DexScreener, Birdeye, Solscan) to fill the gap. Never halt analysis on a single missing source.

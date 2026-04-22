@@ -49,7 +49,7 @@ The canonical structure lives in `references/report-template.md` with `reports/a
 - [ ] Mint authority status (revoked / not revoked / unknown)
 - [ ] LP lock status (locked / unlocked / X days remaining)
 - [ ] Top 5 (or 10) holder concentration %
-- [ ] Fallback chain run if `clodds_token_security` failed (rugcheck.xyz, geckoterminal token info, solscan holders, pumpfun token)
+- [ ] Fallback chain run if `aria_token_security` failed (rugcheck.xyz, geckoterminal token info, solscan holders, pumpfun token)
 - [ ] STOP banner rendered if any rug flag fires (mint not revoked / LP unlocked / top5 >50% / insider cluster / honeypot)
 - [ ] PRESUMED-RISK banner if 3+ fallbacks failed AND token <7 days old
 
@@ -164,9 +164,9 @@ The canonical structure lives in `references/report-template.md` with `reports/a
 - [ ] Phase 6 macro block at top (fear/greed value, BTC+SOL+ETH 24h+7d, BTC dominance, Polymarket/Kalshi — fallback via web_fetch polymarket.com / kalshi.com or web_search if MCP returns help-text — ETF flows via farside.co.uk, sector temp, macro verdict)
 - [ ] Tool-call audit table (which tools succeeded / failed / were substituted) — before the Action Summary
 - [ ] **Phase 10 ACTION SUMMARY block at the end** — mandatory closing block:
-  - [ ] Wallet snapshot with live rows from `clodds_solana_balance` + every CEX `_spot_balance` the user is connected to
+  - [ ] Wallet snapshot with live rows from `aria_solana_balance` + every CEX `_spot_balance` the user is connected to
   - [ ] 🟢 BUY / ADD list with venue named per line (pump.fun / Raydium / Binance spot / Hyperliquid / etc.)
-  - [ ] 🟡 HOLD list grounded in `clodds_bags` — sell-at-price instructions for every existing holding
+  - [ ] 🟡 HOLD list grounded in `aria_bags` — sell-at-price instructions for every existing holding
   - [ ] 🔴 SELL NOW list (or "(none)" if no hard exits)
   - [ ] ⚪ SKIP / AVOID list (tokens scanned but not deployed, with composite score)
   - [ ] Deployment totals + reserve %

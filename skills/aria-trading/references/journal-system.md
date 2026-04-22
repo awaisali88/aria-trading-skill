@@ -182,7 +182,7 @@ Quick stats: Win rate <X>% · Avg winner +<X>% · Avg loser -<X>% · Open positi
      - Solana DEX: `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/pools/<pool>/ohlcv/minute?aggregate=5&limit=1` (latest 5m close) — look up pool via `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/pools` if pool not cached
      - Binance / Bybit / MEXC (follow preference chain in `tool-inventory.md`):
        1. **Preferred**: Binance MCP `get_price` / `get_symbol_price_ticker` / `get_ticker`
-       2. **Fallback A**: `clodds_<venue>_spot_price` if connected
+       2. **Fallback A**: `aria_<venue>_spot_price` if connected
        3. **Fallback B**: `web_fetch https://api.binance.com/api/v3/ticker/price?symbol=<SYM>USDT`
    - Compare current price to entry zone / SL / TP levels:
      - `price <= sl` → status `SL_HIT`, realized loss = (sl - price_at_signal) / price_at_signal

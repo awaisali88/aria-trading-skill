@@ -2,7 +2,7 @@
 
 **ARIA** (Autonomous Research & Intelligence Analyst) is a crypto analyst and active trader skill for AI coding agents.
 
-Built on the Clodds MCP tool suite, ARIA handles the full trading lifecycle:
+Built on the ARIA MCP tool suite, ARIA handles the full trading lifecycle:
 - Deep market research and token analysis (9-phase protocol)
 - Technical, on-chain, social, and macro analysis
 - Portfolio-aware position sizing
@@ -20,12 +20,12 @@ Built on the Clodds MCP tool suite, ARIA handles the full trading lifecycle:
 claude plugin install awaisali88/aria-trading-skill
 ```
 
-Then configure your Clodds MCP connection:
+Then configure your ARIA MCP connection:
 ```
-/aria-trading:configure https://your-clodds.up.railway.app YOUR_TOKEN
+/aria-trading:configure https://your-aria.up.railway.app YOUR_TOKEN
 ```
 
-The plugin automatically bundles the Clodds MCP server config — no manual `.mcp.json` editing needed.
+The plugin automatically bundles the ARIA MCP server config — no manual `.mcp.json` editing needed.
 
 ### Multi-Agent Install (Cursor, Windsurf, Copilot, etc.)
 
@@ -33,14 +33,14 @@ The plugin automatically bundles the Clodds MCP server config — no manual `.mc
 npx skills add awaisali88/aria-trading-skill
 ```
 
-Works with [40+ agents](https://skills.sh). You'll need to configure the Clodds MCP server manually in your agent's MCP settings.
+Works with [40+ agents](https://skills.sh). You'll need to configure the ARIA MCP server manually in your agent's MCP settings.
 
 ### Claude Desktop / Claude Mobile
 
 1. Open Claude → Projects → New Project → name it "ARIA Trader"
 2. Open `prompts/claude-desktop-system-prompt.md`
 3. Copy the full contents and paste into Project Instructions
-4. Connect Clodds MCP in Claude Desktop settings (Settings → MCP Servers)
+4. Connect ARIA MCP in Claude Desktop settings (Settings → MCP Servers)
 
 ---
 
@@ -50,26 +50,26 @@ ARIA uses a **tiered MCP strategy** — required, recommended, and optional. The
 
 ### 🔴 Required
 
-#### Clodds MCP Server
+#### ARIA MCP Server
 
 All trading-venue execution (Binance · Bybit · MEXC · Hyperliquid · pump.fun · Jupiter) plus on-chain, portfolio, alerts, and automation tools. Without this, ARIA cannot place trades or read live balances.
 
 You need:
-1. A running Clodds MCP server (local or hosted on Railway/Fly.io/etc.)
-2. Exchange API keys configured in Clodds
+1. A running ARIA MCP server (local or hosted on Railway/Fly.io/etc.)
+2. Exchange API keys configured in ARIA
 
 **If using the Claude Code plugin**, set these environment variables and restart your session:
 ```bash
-export CLODDS_MCP_URL="https://your-clodds.up.railway.app"
-export CLODDS_MCP_TOKEN="your-mcp-auth-token"
+export ARIA_MCP_URL="https://your-aria.up.railway.app"
+export ARIA_MCP_TOKEN="your-mcp-auth-token"
 ```
 
-**If using `npx skills add`**, add the Clodds MCP server to your agent's `.mcp.json`:
+**If using `npx skills add`**, add the ARIA MCP server to your agent's `.mcp.json`:
 ```json
 {
-  "clodds": {
+  "aria": {
     "type": "http",
-    "url": "https://your-clodds.up.railway.app",
+    "url": "https://your-aria.up.railway.app",
     "headers": {
       "Authorization": "Bearer your-mcp-auth-token"
     }
@@ -77,7 +77,7 @@ export CLODDS_MCP_TOKEN="your-mcp-auth-token"
 }
 ```
 
-Configure API keys inside Clodds for any combination of:
+Configure API keys inside ARIA for any combination of:
 - **CEX:** Binance, Bybit, MEXC, Hyperliquid
 - **DEX:** Solana wallet (for Jupiter, pump.fun, Drift, etc.)
 - **Prediction markets:** Polymarket, Kalshi (optional)
@@ -125,7 +125,7 @@ claude mcp add --transport sse --scope user coingecko https://mcp.api.coingecko.
 |---|---|---|
 | **Perplexity** (`mcp__*perplexity*__*`) | Last-resort tier-3 fallback when direct `web_fetch` returns 402/403/ECONNREFUSED and every other alternative fails. Social/meta/site-content only — **never used for price, OHLCV, balances, or execution quotes.** | Install any Perplexity MCP server — requires a Perplexity AI API key. Example: `claude mcp add --scope user -e PERPLEXITY_API_KEY=<key> perplexity -- npx -y server-perplexity-ask` |
 | **Helius** (`mcp__*helius*__*`) | Alternative on-chain Solana RPC when solscan/gmgn return 403. Tier-2 fallback for token metadata and wallet lookups. | Any Helius MCP server — requires a Helius API key from [helius.dev](https://helius.dev) |
-| **Prediction-market MCPs** (Polymarket, Kalshi, Metaculus, Manifold) | First-class intelligence signals in Phase 5 and Phase 6 when configured via Clodds. Each adds a data-point to the composite score. | Configured inside Clodds, no separate MCP install |
+| **Prediction-market MCPs** (Polymarket, Kalshi, Metaculus, Manifold) | First-class intelligence signals in Phase 5 and Phase 6 when configured via ARIA. Each adds a data-point to the composite score. | Configured inside ARIA, no separate MCP install |
 
 ### Detection and graceful degradation
 
@@ -133,7 +133,7 @@ The skill's lazy-loaded `references/link-resolution.md` defines the full error-c
 ```bash
 claude mcp list
 ```
-Look for ARIA-relevant names (`clodds`, `alpaca`, `twitterapi`, `coingecko`, any `*binance*`, any `*perplexity*`, any `*helius*`).
+Look for ARIA-relevant names (`aria`, `alpaca`, `twitterapi`, `coingecko`, any `*binance*`, any `*perplexity*`, any `*helius*`).
 
 ---
 
@@ -154,9 +154,9 @@ Look for ARIA-relevant names (`clodds`, `alpaca`, `twitterapi`, `coingecko`, any
 - Explicit confirmation required before any execution
 - Full fill report with automation confirmation after every trade
 
-### Automated Monitoring (Clodds-native, no TradingView needed)
+### Automated Monitoring (ARIA-native, no TradingView needed)
 
-**Tier 1** — Clodds auto-executes independently (runs 24/7):
+**Tier 1** — ARIA auto-executes independently (runs 24/7):
 - Stop loss hit → auto-close position + Slack notification
 - TP1 hit → auto-sell 30%, move SL to breakeven + notification
 - Trailing stop → auto-close remainder + notification
@@ -213,7 +213,7 @@ What's BTC doing?
 aria-trading-skill/
 ├── .claude-plugin/
 │   └── plugin.json                        ← Plugin manifest
-├── .mcp.json                              ← Clodds MCP config (auto-configured)
+├── .mcp.json                              ← ARIA MCP config (auto-configured)
 ├── skills/
 │   ├── aria-trading/
 │   │   ├── SKILL.md                       ← Core skill (triggers + workflow)

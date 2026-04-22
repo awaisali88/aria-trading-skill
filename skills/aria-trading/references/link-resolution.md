@@ -1,6 +1,6 @@
 # Link Resolution Playbook — HTTP-Error-Routed Fallback Chains
 
-Load this file **only when a direct `web_fetch` returns a non-200** or when a Clodds data tool returns `"Unknown skill"` / empty help-text. If every fetch in the current analysis is succeeding, this file never needs to enter context.
+Load this file **only when a direct `web_fetch` returns a non-200** or when a ARIA data tool returns `"Unknown skill"` / empty help-text. If every fetch in the current analysis is succeeding, this file never needs to enter context.
 
 **Why this file exists:** the `$PUB` report (2026-04-21) showed that `403` / `402` / `ECONNREFUSED` responses were consistently treated as "data UNKNOWN" with no alternative route attempted. That's a false negative — most of those pages are reachable via a public-API alt host, a mirror, an archive, or Perplexity. The correct behavior is: on any non-200, consult the §1 dispatch table, try tiers 1→3 in order (with the §4 stop-rule), and only label `UNKNOWN` after the chain is exhausted. Record every attempt in the Tool-call audit table so the user can see what was tried.
 
@@ -16,7 +16,7 @@ For every URL pattern that is known to block anonymous automated fetches, the ta
 | `solscan.io/account/<wallet>` | 403 | `web_fetch https://public-api.solscan.io/account?account=<wallet>` | Helius MCP `getAsset` or `web_fetch https://api.helius.xyz/v0/addresses/<wallet>/balances?api-key=<key>` | Perplexity: `"wallet activity summary for Solana address <wallet> — labels, linked handles, prior token deployments"` | `UNKNOWN (solscan 403 chain exhausted)` |
 | `gmgn.ai/sol/token/<mint>` | 403 (Cloudflare) | `web_fetch https://api.gmgn.ai/api/v1/token_info/sol/<mint>` (alt host, often un-shielded) | `web_fetch https://public-api.birdeye.so/defi/token_overview?address=<mint>` (header `x-chain: solana`) | Perplexity: `"gmgn profile for Solana token <mint> — insider cluster, sniper count, dev sold %"` | `UNKNOWN (gmgn 403 chain exhausted)` |
 | `gmgn.ai/sol/address/<wallet>` | 403 | `web_fetch https://api.gmgn.ai/api/v1/wallet/sol/<wallet>` | `web_fetch https://api.cielo.finance/v1/wallet/<wallet>` (public pnl endpoint) | Perplexity: `"prior token launches by Solana wallet <wallet>"` | `UNKNOWN (creator wallet: 3 fallbacks failed)` |
-| `clodds_pumpfun holders/trades/chart <mint>` | 404 | `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info` + `/pools/<pool>/trades?limit=100` | `web_fetch https://api.dexscreener.com/token-pairs/v1/solana/<mint>` | Perplexity: `"recent trades and holder concentration for <mint>"` (last-resort — GT usually suffices) | `INSUFFICIENT (GT + DexScreener empty)` |
+| `aria_pumpfun holders/trades/chart <mint>` | 404 | `web_fetch https://api.geckoterminal.com/api/v2/networks/solana/tokens/<mint>/info` + `/pools/<pool>/trades?limit=100` | `web_fetch https://api.dexscreener.com/token-pairs/v1/solana/<mint>` | Perplexity: `"recent trades and holder concentration for <mint>"` (last-resort — GT usually suffices) | `INSUFFICIENT (GT + DexScreener empty)` |
 | `rugcheck.xyz/tokens/<mint>` returns `risks:[], topHolders:null, tokenMeta:null` | sparse (not 404 — looks OK but empty) | `web_fetch https://honeypot.is/api/v2/scan?network=solana&address=<mint>` | `web_fetch https://api.gopluslabs.io/api/v1/token_security/solana?contract_addresses=<mint>` | Perplexity: `"honeypot / rug indicators for Solana mint <mint>"` | **Flag `SPARSE` — do NOT count as clean.** In Phase 1, treat sparse-rugcheck as no-data and insist on 2+ corroborating sources before passing the security gate. |
 | `x.com/<handle>/status/<id>` | (not an error) — currently mis-handled as "status not account" | **`mcp__*twitterapi*__*` MCP if present** (TwitterAPI.io live proxy — returns full tweet JSON) → run `pumpfun-social-playbook.md §1.4 X-STATUS HANDLER` | `cdn.syndication.twimg.com/tweet-result?id=<id>` (free public JSON) → Nitter mirror rotation (§3) | Perplexity: `"tweet at <URL> — full text, likes, replies, top-3 reply handles"` | `UNKNOWN (MCP + syndication + nitter + Perplexity failed)` |
 | `x.com/<handle>` | 402 / 403 | **`mcp__*twitterapi*__*` MCP if present** (`get_user_by_username` / `user_resource`) | Nitter mirror rotation (§3) → `web_search "@<handle> twitter followers"` | Perplexity: `site:x.com <handle> — follower count, bio, account creation date, post count` | `UNKNOWN (MCP + nitter + search failed)` |
@@ -25,7 +25,7 @@ For every URL pattern that is known to block anonymous automated fetches, the ta
 | `t.me/<handle>` | preview thin | `web_fetch https://t.me/s/<handle>` (public web preview, shows last ~N messages + member count) | `web_search "<tg_link> telegram members"` | Perplexity: `"Telegram channel @<handle> — member count, post frequency, last message date"` | `Telegram: unverifiable (3 tiers failed)` |
 | `<project-website>` | ECONNREFUSED / DNS fail / 404 | `web_fetch https://web.archive.org/web/2025*/<url>` and `https://web.archive.org/web/2026*/<url>` (wayback machine) | `web_search "<domain> crypto project"` + check any result with screenshot/cache | Perplexity: `"content of <domain> — is there a live version, cached snapshot, or public record of what this site was"` | `Website: DEAD (wayback empty)` — only mark DEAD after wayback confirms no archive |
 | `farside.co.uk/btc-etf-flow-all-data/` | blocked / captcha | `web_fetch https://www.theblock.co/data/crypto-markets/spot-btc-etfs` | `web_fetch https://www.cointelegraph.com/tags/spot-bitcoin-etf` | Perplexity: `"BTC spot ETF net flows on <DATE> in USD millions — sum IBIT, FBTC, ARKB, BITB, BTCO, EZBC, BRRR, HODL, BTCW, GBTC"` | `ETF flows: unavailable (3 sources blocked)` |
-| Any Clodds tool returning `"Unknown skill"` or help-text-only | — | Claude-native equivalent already listed in `SKILL.md` Data Fallback Protocol table | Perplexity research query equivalent to the tool's purpose | (no tier 4) | per existing SKILL.md behavior |
+| Any ARIA tool returning `"Unknown skill"` or help-text-only | — | Claude-native equivalent already listed in `SKILL.md` Data Fallback Protocol table | Perplexity research query equivalent to the tool's purpose | (no tier 4) | per existing SKILL.md behavior |
 
 ---
 
@@ -114,8 +114,8 @@ not prose. Cite the retrieval source (e.g. "wayback 2026-01-15", "cache.google")
 
 Perplexity returns prose and may paraphrase/hallucinate numeric data. **Never quote Perplexity as the primary source for:**
 - Price, volume, liquidity, OHLCV (use GeckoTerminal / Binance klines / pump.fun directly)
-- Live holder counts or balances (use `clodds_pumpfun holders` / `public-api.solscan.io` / Helius)
-- Trade execution quotes (use `clodds_jupiter_quote` / `clodds_solana_quote`)
+- Live holder counts or balances (use `aria_pumpfun holders` / `public-api.solscan.io` / Helius)
+- Trade execution quotes (use `aria_jupiter_quote` / `aria_solana_quote`)
 - Current-moment prediction-market odds (use Polymarket/Kalshi MCPs or web_fetch)
 
 Perplexity is for **social/meta/site-content signals only** — things that are either qualitative or archival. Tag any datapoint sourced via Perplexity as `(via Perplexity)` in the rendered block so the reader knows its confidence floor.
@@ -146,7 +146,7 @@ Example audit row:
 
 ## §6 — Integration points in the pipeline
 
-- **Phase 1** (`aria-protocol.md § PHASE 1`) — if `clodds_token_security` or rugcheck returns sparse, dispatch via §1 table. After 5 of 7 tiered sources fail, render the `PRESUMED-RISK` banner per aria-protocol.md.
+- **Phase 1** (`aria-protocol.md § PHASE 1`) — if `aria_token_security` or rugcheck returns sparse, dispatch via §1 table. After 5 of 7 tiered sources fail, render the `PRESUMED-RISK` banner per aria-protocol.md.
 - **Phase 4** (`aria-protocol.md § PHASE 4 On-chain`) — before labeling `Creator wallet: UNKNOWN`, dispatch via §1 rows for `solscan.io/account/*` and `gmgn.ai/sol/address/*`.
 - **Phase 5 Memecoin** (`pumpfun-social-playbook.md`) — creator-handle chain §1.1 invokes the §1 X-row dispatch and the new §1.4 X-status handler.
 - **Phase 6 Macro** (`aria-protocol.md § PHASE 6`) — ETF flows failover per the `farside.co.uk` row.

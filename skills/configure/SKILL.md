@@ -1,6 +1,6 @@
 ---
 name: configure
-description: Set up ARIA Trading — save your Clodds MCP server URL and authentication token. Use when the user asks to configure ARIA, set up trading, connect to Clodds, change their MCP endpoint, or says "configure".
+description: Set up ARIA Trading — save your ARIA MCP server URL and authentication token. Use when the user asks to configure ARIA, set up trading, connect to ARIA, change their MCP endpoint, or says "configure".
 user-invocable: true
 allowed-tools:
   - Read
@@ -14,7 +14,7 @@ allowed-tools:
 
 # /aria-trading:configure — ARIA Trading Setup
 
-Manages the Clodds MCP connection credentials so ARIA can reach the trading tools.
+Manages the ARIA MCP connection credentials so ARIA can reach the trading tools.
 
 Arguments passed: `$ARGUMENTS`
 
@@ -26,9 +26,9 @@ Arguments passed: `$ARGUMENTS`
 
 Check the current connection state and guide the user:
 
-1. **MCP URL** — check if `CLODDS_MCP_URL` is set in the environment. If set, show the URL. If not, show "not configured".
+1. **MCP URL** — check if `ARIA_MCP_URL` is set in the environment. If set, show the URL. If not, show "not configured".
 
-2. **MCP Token** — check if `CLODDS_MCP_TOKEN` is set. If set, show first 8 characters masked (e.g., `abc12345...`). If not, show "not configured".
+2. **MCP Token** — check if `ARIA_MCP_TOKEN` is set. If set, show first 8 characters masked (e.g., `abc12345...`). If not, show "not configured".
 
 3. **Execution mode** — check `ARIA_EXECUTION_MODE` env var. If set, show its value (`paper` or `live`). If unset, show `paper (default — first-install safe mode)`. Explain how to change it:
    ```
@@ -43,17 +43,17 @@ Check the current connection state and guide the user:
 5. **Next steps** based on state:
    - Nothing configured → tell the user:
      ```
-     Run: /aria-trading:configure <your-clodds-url> <your-token>
+     Run: /aria-trading:configure <your-aria-url> <your-token>
      
      Example:
-     /aria-trading:configure https://clodds-mcp.up.railway.app sk-abc123...
+     /aria-trading:configure https://aria-mcp.up.railway.app sk-abc123...
      ```
-   - Both set → show "Ready. ARIA is connected to Clodds." and confirm the URL.
+   - Both set → show "Ready. ARIA is connected to ARIA." and confirm the URL.
    - Partial → show what's missing and how to fix it.
 
 ### `<url> <token>` — save credentials
 
-The user provides their Clodds MCP server URL and authentication token.
+The user provides their ARIA MCP server URL and authentication token.
 
 1. Parse the arguments: first argument is the URL, second is the token.
 2. Validate the URL starts with `http://` or `https://`.
@@ -62,8 +62,8 @@ The user provides their Clodds MCP server URL and authentication token.
    **Option A — Shell environment (recommended):**
    ```bash
    # Add to your shell profile (~/.bashrc, ~/.zshrc, or Windows environment variables)
-   export CLODDS_MCP_URL="<url>"
-   export CLODDS_MCP_TOKEN="<token>"
+   export ARIA_MCP_URL="<url>"
+   export ARIA_MCP_TOKEN="<token>"
    ```
 
    **Option B — Claude Code settings:**
@@ -73,12 +73,12 @@ The user provides their Clodds MCP server URL and authentication token.
 
 ### `clear` — remove credentials
 
-1. Tell the user to remove `CLODDS_MCP_URL` and `CLODDS_MCP_TOKEN` from their shell profile or environment settings.
-2. Confirm the credentials should be cleared and that ARIA will not be able to reach Clodds until reconfigured.
+1. Tell the user to remove `ARIA_MCP_URL` and `ARIA_MCP_TOKEN` from their shell profile or environment settings.
+2. Confirm the credentials should be cleared and that ARIA will not be able to reach ARIA until reconfigured.
 
 ### `test` — test connection
 
-1. Attempt to call any simple Clodds tool (e.g., `clodds_market_index` or `clodds_signals`) to verify the connection works.
+1. Attempt to call any simple ARIA tool (e.g., `aria_market_index` or `aria_signals`) to verify the connection works.
 2. If it succeeds, confirm "Connection verified — ARIA is ready."
 3. If it fails, show the error and suggest the user check their URL and token.
 
@@ -86,7 +86,7 @@ The user provides their Clodds MCP server URL and authentication token.
 
 ## Important notes
 
-- The `.mcp.json` bundled with this plugin uses `${CLODDS_MCP_URL}` and `${CLODDS_MCP_TOKEN}` environment variables.
+- The `.mcp.json` bundled with this plugin uses `${ARIA_MCP_URL}` and `${ARIA_MCP_TOKEN}` environment variables.
 - These env vars must be available in the shell environment where Claude Code runs.
 - After setting env vars, the user must restart their Claude Code session for changes to take effect.
 - Never log or display the full token — always mask it after the first 8 characters.

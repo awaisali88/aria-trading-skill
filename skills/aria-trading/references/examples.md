@@ -13,7 +13,7 @@ Every example starts with `Use ARIA.` to guarantee skill activation on Claude Co
 ```
 Use ARIA. Scan the market and give me the top 3 buys for my balance today.
 ```
-*Runs `clodds_market_index` + pumpfun trending/hot/gainers + `clodds_signals` + `web_search` → ranks top 3 with full ARIA scores. Shows what's already moving.*
+*Runs `aria_market_index` + pumpfun trending/hot/gainers + `aria_signals` + `web_search` → ranks top 3 with full ARIA scores. Shows what's already moving.*
 
 ```
 Use ARIA. What are the hottest pump.fun plays right now?
@@ -23,7 +23,7 @@ Use ARIA. What are the hottest pump.fun plays right now?
 ```
 Use ARIA. Any signals today?
 ```
-*`clodds_signals` + market index + `clodds_edge` + `web_search` → live opportunity list.*
+*`aria_signals` + market index + `aria_edge` + `web_search` → live opportunity list.*
 
 ### 1b. Forward-looking predictive scanner (what's ABOUT to move)
 
@@ -50,7 +50,7 @@ Use ARIA. Pre-pump top 3 on Solana only.
 ```
 Use ARIA. Pre-pump top 5 on Binance only.
 ```
-*Restrict candidate universe to Binance-listed tokens (clodds_signals + Binance 24hr ticker top gainers/losers). Skip Solana DEX surface.*
+*Restrict candidate universe to Binance-listed tokens (aria_signals + Binance 24hr ticker top gainers/losers). Skip Solana DEX surface.*
 
 ```
 Use ARIA. Rescan.
@@ -84,7 +84,7 @@ Use ARIA. Analyze Solana mint [MINT_ADDRESS] — is it safe and worth buying?
 ```
 Use ARIA. Check the security of pump.fun token [MINT].
 ```
-*`clodds_token_security` + pump.fun token profile + whale tracking + solscan fetch → rug pass/fail.*
+*`aria_token_security` + pump.fun token profile + whale tracking + solscan fetch → rug pass/fail.*
 
 ---
 
@@ -122,17 +122,17 @@ Use ARIA. Swing-trade read on $BTC — I want to hold 2-4 weeks.
 ```
 Use ARIA. What's my portfolio?
 ```
-*`clodds_portfolio_summary` + PnL + bags + risk → full report across all venues.*
+*`aria_portfolio_summary` + PnL + bags + risk → full report across all venues.*
 
 ```
 Use ARIA. What's my PnL today?
 ```
-*`clodds_portfolio_pnl` + bags → realized + unrealized breakdown.*
+*`aria_portfolio_pnl` + bags → realized + unrealized breakdown.*
 
 ```
 Use ARIA. Show me my open positions and their SL/TP distances.
 ```
-*`clodds_portfolio_positions` + `clodds_monitoring` → dashboard with health flags.*
+*`aria_portfolio_positions` + `aria_monitoring` → dashboard with health flags.*
 
 ```
 Use ARIA. Check my $SOL position — should I add, hold, or exit?
@@ -142,7 +142,7 @@ Use ARIA. Check my $SOL position — should I add, hold, or exit?
 ```
 Use ARIA. What's my Binance USDT balance?
 ```
-*`clodds_binance_spot_balance` → live balance.*
+*`aria_binance_spot_balance` → live balance.*
 
 ---
 
@@ -156,7 +156,7 @@ Use ARIA. Buy 0.5 SOL worth of [MINT] on pump.fun.
 ```
 Use ARIA. Buy $50 of $XRP on Binance spot.
 ```
-*`clodds_binance_spot_balance` → price check → confirmation format → on "go" → execute + wire automation.*
+*`aria_binance_spot_balance` → price check → confirmation format → on "go" → execute + wire automation.*
 
 ```
 Use ARIA. Long $ETH with 5× leverage on Hyperliquid, size it conservatively.
@@ -171,7 +171,7 @@ Use ARIA. Short $DOGE on Bybit — I think this is topping.
 ```
 Use ARIA. Swap all my BONK back to SOL.
 ```
-*`clodds_jupiter_quote` → show net receive + price impact → confirmation → execute.*
+*`aria_jupiter_quote` → show net receive + price impact → confirmation → execute.*
 
 ```
 Use ARIA. Close my $XRP position.
@@ -181,7 +181,7 @@ Use ARIA. Close my $XRP position.
 ```
 Use ARIA. DCA $20/day into $BTC for 2 weeks.
 ```
-*Confirm amount / frequency / ceiling → `clodds_dca` + `clodds_automation` → confirm schedule live.*
+*Confirm amount / frequency / ceiling → `aria_dca` + `aria_automation` → confirm schedule live.*
 
 ---
 
@@ -190,7 +190,7 @@ Use ARIA. DCA $20/day into $BTC for 2 weeks.
 ```
 Use ARIA. Check my alerts.
 ```
-*`clodds_monitoring` + `clodds_alerts` + positions → re-analyze each fired alert → present decisions.*
+*`aria_monitoring` + `aria_alerts` + positions → re-analyze each fired alert → present decisions.*
 
 ```
 Use ARIA. Set a price alert on $SOL at $100.
@@ -200,17 +200,17 @@ Use ARIA. Set a price alert on $SOL at $100.
 ```
 Use ARIA. Monitor all my positions every few minutes.
 ```
-*Activates `clodds_monitoring` loop + reports status dashboard.*
+*Activates `aria_monitoring` loop + reports status dashboard.*
 
 ```
 Use ARIA. Update the trailing stop on my $XRP trade to 5%.
 ```
-*Pull current price → recalc → update `clodds_automation` → confirm.*
+*Pull current price → recalc → update `aria_automation` → confirm.*
 
 ```
 Use ARIA. Alert me if [MINT] volume spikes 2× or a whale sells more than $50k.
 ```
-*Registers volume + whale alerts via `clodds_alerts`.*
+*Registers volume + whale alerts via `aria_alerts`.*
 
 ---
 
@@ -238,34 +238,34 @@ Use ARIA. Is memecoin season on or off?
 ```
 Use ARIA. Research Fartcoin — narrative, holders, who's behind it, why anyone would hold.
 ```
-*`clodds_research` + `web_search` + `web_fetch` on project page and socials → comprehensive report.*
+*`aria_research` + `web_search` + `web_fetch` on project page and socials → comprehensive report.*
 
 ```
 Use ARIA. What's the Alpenglow upgrade and is it priced into $SOL?
 ```
-*`clodds_research` + `web_search` → catalyst deep-dive + price-impact read.*
+*`aria_research` + `web_search` → catalyst deep-dive + price-impact read.*
 
 ```
 Use ARIA. Compare $XRP vs $ADA — which is the better commodity-framework bet today?
 ```
 *Side-by-side 9-phase protocol → ranked recommendation.*
 
-### Prediction markets & AI opinion (Clodds-powered)
+### Prediction markets & AI opinion (ARIA-powered)
 
 ```
 Use ARIA. What does Polymarket think about $BTC hitting $100K by year-end?
 ```
-*Direct Polymarket query → `clodds_polymarket_markets "BTC 100K"` + orderbook on the top hit → extracts implied probability (bestBid_YES / 100) → reports market title, YES/NO odds, 24h volume, and participation depth. Cross-checks with Metaculus and Manifold if they have a matching question.*
+*Direct Polymarket query → `aria_polymarket_markets "BTC 100K"` + orderbook on the top hit → extracts implied probability (bestBid_YES / 100) → reports market title, YES/NO odds, 24h volume, and participation depth. Cross-checks with Metaculus and Manifold if they have a matching question.*
 
 ```
 Use ARIA. Get implied probability of SEC approving a SOL ETF from Kalshi and Polymarket.
 ```
-*Runs `clodds_kalshi_markets "SOL ETF"` + `clodds_polymarket_markets "SOL ETF"` → reports both books' implied probs side-by-side → flags any >10pp divergence as a tradeable edge (smart-money vs retail disagreement).*
+*Runs `aria_kalshi_markets "SOL ETF"` + `aria_polymarket_markets "SOL ETF"` → reports both books' implied probs side-by-side → flags any >10pp divergence as a tradeable edge (smart-money vs retail disagreement).*
 
 ```
-Use ARIA. Give me the clodds_opinion on $SOL right now — is it a buy?
+Use ARIA. Give me the aria_opinion on $SOL right now — is it a buy?
 ```
-*Calls `clodds_opinion "SOL — buy or sell given current price, setup, 1h Δ?"` with full live context → returns AI-synthesized bias (🟢/🟡/🔴) + one-line rationale. Useful as a quick second opinion before a full 9-phase analysis.*
+*Calls `aria_opinion "SOL — buy or sell given current price, setup, 1h Δ?"` with full live context → returns AI-synthesized bias (🟢/🟡/🔴) + one-line rationale. Useful as a quick second opinion before a full 9-phase analysis.*
 
 ---
 
@@ -277,7 +277,7 @@ Use ARIA. I'm day trading today. Run the full analysis on SOL, XRP, and TAO on B
 *The stress-test prompt. Exercises every phase, the fallback protocol, and the full indicator suite.*
 
 ```
-Use ARIA. Same analysis but assume every Clodds data source fails — show me the web_search / web_fetch fallbacks working.
+Use ARIA. Same analysis but assume every ARIA data source fails — show me the web_search / web_fetch fallbacks working.
 ```
 *Explicit fallback-path test — forces the model to route via CoinGecko / DexScreener / Birdeye / Solscan / X.*
 
@@ -323,7 +323,7 @@ Use ARIA. Run the compliance checklist on this report: [path or paste content].
 ```
 Use ARIA. Action summary only — what should I buy, sell, or hold right now based on my live balances?
 ```
-*Skip the per-token 9-phase walk and go straight to Phase 10. Pulls live balances from every connected venue (Solana + Binance + Bybit + MEXC + Hyperliquid), cross-references existing positions in `clodds_bags`, and renders only the Action Summary block — BUY/HOLD/SELL/SKIP with venue + size + price targets + Top next-action. Best for quick daily check-ins.*
+*Skip the per-token 9-phase walk and go straight to Phase 10. Pulls live balances from every connected venue (Solana + Binance + Bybit + MEXC + Hyperliquid), cross-references existing positions in `aria_bags`, and renders only the Action Summary block — BUY/HOLD/SELL/SKIP with venue + size + price targets + Top next-action. Best for quick daily check-ins.*
 
 ---
 
