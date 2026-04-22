@@ -1,0 +1,344 @@
+{
+  "report_metadata": {
+    "scan_id": "solana-scan-2026-04-20-1330",
+    "generated_at": "2026-04-20T13:30:00Z",
+    "scope": "solana_sol_major_plus_ecosystem_memecoins",
+    "execution_mode": "paper_trading_alpaca_plus_simulated_memecoins",
+    "universe_surfaces": [
+      "alpaca_crypto_sol_btc_eth",
+      "pumpfun_trending_hot_gainers_new",
+      "geckoterminal_solana_trending_pools",
+      "geckoterminal_ohlcv_per_survivor",
+      "polymarket_crypto_fallback_web_fetch"
+    ],
+    "profile_mix": "Major (SOL) + Memecoin (TROLL/MOODENG/arc/BOME)",
+    "horizon": "1-24h intraday + 24-72h positional",
+    "source_report": "reports/solana-scan-2026-04-20-1330.md",
+    "prior_scan": "reports/solana-scan-2026-04-20-1045.md"
+  },
+
+  "delta_from_prior_scan": {
+    "prior_scan_time_utc": "2026-04-20T10:45:00Z",
+    "elapsed_minutes": 165,
+    "thesis_broken_flips": [
+      {
+        "ticker": "Pnut",
+        "prior_signal": "BUY-NOW",
+        "prior_score": 80,
+        "new_signal": "SELL-NOW",
+        "new_score": 42,
+        "reason": "velocity collapse 3,978 -> 283 txns/1h (-93%); signal's own rule fired"
+      }
+    ],
+    "score_changes": [
+      { "ticker": "BOME",     "prior": 67, "new": 58, "direction": "down", "reason": "moving away from trigger" },
+      { "ticker": "MOODENG",  "prior": 61, "new": 63, "direction": "up",   "reason": "recovery holding, price +3%" },
+      { "ticker": "arc",      "prior": 63, "new": 61, "direction": "down", "reason": "divergent signal — vol up, price flat/down" },
+      { "ticker": "neet",     "prior": 66, "new": 55, "direction": "down", "reason": "activity cooling, dropped from top-5 to tail" }
+    ],
+    "new_in_top_5": [
+      { "ticker": "SOL",   "score": 72, "signal": "BUY-WATCH", "reason": "Major Profile addition — Alpaca-paper-executable" },
+      { "ticker": "TROLL", "score": 67, "signal": "BUY-WATCH", "reason": "Santiment-trending memecoin, fresh Apr 20 pool, $1.57M liq" }
+    ],
+    "dropped_from_top_5": [
+      { "ticker": "Pnut",  "reason": "thesis broken (see flips)" },
+      { "ticker": "neet",  "reason": "cooling to tail score 55" }
+    ]
+  },
+
+  "wallet_snapshot": {
+    "alpaca_paper": {
+      "account_id": "f13072d6-3f6e-4385-860e-12a4bd51a896",
+      "account_number": "PA324QFZP6QW",
+      "cash_usd": 100000.0,
+      "equity_usd": 100000.0,
+      "buying_power_usd": 200000.0,
+      "open_positions": 0,
+      "status": "ACTIVE",
+      "crypto_status": "ACTIVE"
+    },
+    "solana_real": {
+      "address": "GwwcVEb7GVXxTHviHr8a8pWDXWH5xjtG5GveLATTahfk",
+      "sol_balance": 0.0,
+      "status": "EMPTY"
+    },
+    "execution_rule": "SOL signals -> Alpaca Paper (real fills, simulated money). Memecoins -> journal-only (Alpaca doesn't list pump.fun tokens)."
+  },
+
+  "macro_snapshot": {
+    "as_of_utc": "2026-04-20T13:30:00Z",
+    "fear_greed": { "value": 29, "label": "Fear" },
+    "btc_usd": 75134,
+    "btc_24h_pct": 1.8,
+    "btc_7d_pct": 0.9,
+    "sol_usd": 85.21,
+    "sol_24h_pct": 2.1,
+    "sol_7d_pct": -1.5,
+    "eth_usd": 2315,
+    "eth_24h_pct": 2.3,
+    "eth_7d_pct": -2.4,
+    "btc_dominance_pct": 57.48,
+    "total_market_cap_usd": 2617000000000,
+    "total_market_cap_24h_pct": -0.96,
+    "polymarket_headline_probs": {
+      "btc_74k_76k_stays_yes_pct": 73,
+      "eth_2300_2400_stays_yes_pct": 72,
+      "btc_april_80k_yes_pct": 39
+    },
+    "etf_flows_status": "farside_403_blocked",
+    "memecoin_sector": "WARM",
+    "pump_fun_green_count_24h": 7,
+    "pump_fun_red_count_24h": 5,
+    "macro_verdict": "NEUTRAL — supports mean-reversion + trigger-disciplined plays; not max-long until BTC reclaims $76K"
+  },
+
+  "predictions": [
+    {
+      "rank": 1,
+      "ticker": "SOL",
+      "symbol": "$SOL",
+      "mint": null,
+      "venue": "Alpaca Paper",
+      "chain": "cex",
+      "profile": "Major",
+      "score": 72,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "intraday (4h-24h) + swing (24-72h)",
+      "price_now_usd": 85.21,
+      "change_1h_pct": 0.4,
+      "change_24h_pct": 2.1,
+      "change_7d_pct": -1.5,
+      "trade_plan": {
+        "entry_zone": { "low": 84.20, "high": 86.00 },
+        "trigger_condition": "break above $86.00 with 1h vol >=1.3x avg OR pullback to $84.20-$84.50 + 15m bull-reversal",
+        "sl": 82.50,
+        "tp1": 89.00,
+        "tp2": 92.00,
+        "tp3": 96.00,
+        "trailing_pct_below_peak": 3.0,
+        "trailing_activate_pct": 5.0,
+        "position_size_usd": 2000,
+        "position_size_sol": 23,
+        "position_size_pct_equity": 2.0,
+        "r_r_tp1": 1.4,
+        "r_r_tp2": 2.5,
+        "r_r_tp3": 4.0
+      },
+      "probability_distribution": { "up_24h_pct": 46, "down_pct": 28, "sideways_pct": 26 },
+      "thesis_one_line": "Major-asset bounce from $83.5 floor; Polymarket 56% odds of SOL $90 by April close; trigger-disciplined at support not resistance",
+      "invalidation": ["BTC <$74,000", "SOL <$82.50", "4h close <$83 on rising volume"]
+    },
+    {
+      "rank": 2,
+      "ticker": "TROLL",
+      "symbol": "$TROLL",
+      "mint": "5UUH9RTDiSpq6HKS6bp4NdU9PNJpXRXuiw6ShBTBhgH2",
+      "venue": "Raydium",
+      "chain": "solana",
+      "profile": "Memecoin",
+      "score": 67,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "intraday + positional (24-72h)",
+      "price_now_usd": 0.02025,
+      "change_1h_pct": 0.9,
+      "change_24h_pct": 22.7,
+      "mcap_usd_m": 20,
+      "liquidity_usd_m": 1.57,
+      "trade_plan": {
+        "entry_zone": { "low": 0.0185, "high": 0.0210 },
+        "trigger_condition": "break >$0.0210 with 15m vol >=2x avg OR pullback to $0.0185 + 15m reversal",
+        "sl": 0.0175,
+        "tp1": 0.0230,
+        "tp2": 0.0265,
+        "tp3": 0.0310,
+        "trailing_pct_below_peak": 15.0,
+        "trailing_activate_pct": 15.0,
+        "position_size_usd": 30,
+        "r_r_tp1": 1.4,
+        "r_r_tp2": 2.2,
+        "r_r_tp3": 2.8
+      },
+      "probability_distribution": { "up_24h_pct": 40, "down_pct": 30, "sideways_pct": 30 },
+      "thesis_one_line": "Santiment-trending memecoin on Apr 20 pool; $1.57M liq; +22% 24h already, waiting for break confirmation",
+      "invalidation": ["1h close <$0.0185", "SOL <$82.50", "creator X goes silent >24h"],
+      "execution_note": "simulated-journal only — Alpaca does not list"
+    },
+    {
+      "rank": 3,
+      "ticker": "MOODENG",
+      "symbol": "$MOODENG",
+      "mint": "ED5nyyWEzpPPiWimP8vY",
+      "venue": "PumpSwap",
+      "chain": "solana",
+      "profile": "Memecoin",
+      "score": 63,
+      "verdict": "BUY-WATCH",
+      "conviction": "LOW-MEDIUM",
+      "horizon": "intraday + positional",
+      "price_now_usd": 0.05594,
+      "change_1h_pct": 0.6,
+      "change_24h_pct": 3.1,
+      "attempt_number": 3,
+      "trade_plan": {
+        "entry_zone": { "low": 0.0580, "high": 0.0590 },
+        "trigger_condition": "break >$0.0580 with txns sustained >500/1h for 30min",
+        "sl": 0.0475,
+        "tp1": 0.062,
+        "tp2": 0.0715,
+        "tp3": 0.084,
+        "trailing_pct_below_peak": 15.0,
+        "position_size_usd": 25,
+        "r_r_tp1": 1.0,
+        "r_r_tp2": 2.0,
+        "r_r_tp3": 3.0
+      },
+      "probability_distribution": { "up_24h_pct": 40, "down_pct": 32, "sideways_pct": 28 },
+      "thesis_one_line": "Attempt #3 at reversal holding; double-bottom at $0.048-$0.052; 3rd-attempt bias flag",
+      "invalidation": ["txns <100/1h", "1h close <$0.0475", "SOL <$82.50"],
+      "execution_note": "simulated-journal only"
+    },
+    {
+      "rank": 4,
+      "ticker": "arc",
+      "symbol": "$arc",
+      "mint": "61V8vBaqAGMpgDQi4JcA",
+      "venue": "PumpSwap",
+      "chain": "solana",
+      "profile": "Memecoin",
+      "score": 61,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "intraday + positional",
+      "price_now_usd": 0.06975,
+      "change_1h_pct": -0.1,
+      "change_24h_pct": 2.4,
+      "divergent_signal": "volume +139% (80->191 txns/1h) while price -1.5% = accumulation OR distribution candidate",
+      "trade_plan": {
+        "entry_zone": { "low": 0.0755, "high": 0.0760 },
+        "trigger_condition": "break >$0.0755 with price confirm >=2 bars OR pullback to $0.065 + 15m reversal",
+        "sl": 0.0615,
+        "tp1": 0.081,
+        "tp2": 0.092,
+        "tp3": 0.108,
+        "trailing_pct_below_peak": 12.0,
+        "trailing_activate_pct": 15.0,
+        "position_size_usd": 20,
+        "r_r_tp1": 0.9,
+        "r_r_tp2": 1.6,
+        "r_r_tp3": 2.3
+      },
+      "probability_distribution": { "up_24h_pct": 38, "down_pct": 30, "sideways_pct": 32 },
+      "thesis_one_line": "Volume acceleration 2.4x with price flat = early accumulation candidate but needs price confirmation before entry",
+      "invalidation": ["TAO <$240", "arc 1h close <$0.0615", "SOL <$82.50"],
+      "execution_note": "simulated-journal only"
+    },
+    {
+      "rank": 5,
+      "ticker": "BOME",
+      "symbol": "$BOME",
+      "mint": "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82",
+      "venue": "Raydium",
+      "chain": "solana",
+      "profile": "Memecoin (mature)",
+      "score": 58,
+      "verdict": "BUY-WATCH",
+      "conviction": "MEDIUM",
+      "horizon": "intraday + positional",
+      "price_now_usd": 0.000572,
+      "change_1h_pct": -1.6,
+      "change_24h_pct": -3.5,
+      "liquidity_usd_m": 11.03,
+      "trade_plan": {
+        "entry_zone": { "low": 0.00062, "high": 0.00063 },
+        "trigger_condition": "break >$0.00062 with 1h vol sustained >$2M OR deep pullback to $0.00054 + 15m reversal",
+        "sl": 0.00050,
+        "tp1": 0.00068,
+        "tp2": 0.00078,
+        "tp3": 0.0009,
+        "trailing_pct_below_peak": 12.0,
+        "position_size_usd": 25,
+        "r_r_tp1": 0.5,
+        "r_r_tp2": 1.4,
+        "r_r_tp3": 2.2
+      },
+      "probability_distribution": { "up_24h_pct": 38, "down_pct": 28, "sideways_pct": 34 },
+      "thesis_one_line": "Best-in-class $11M liq = lowest rug-risk memecoin basket pick; momentum weakening, retain for structural value",
+      "invalidation": ["1h close <$0.00050", "SOL <$82.50"],
+      "execution_note": "simulated-journal only"
+    }
+  ],
+
+  "sell_now_thesis_broken": [
+    {
+      "ticker": "Pnut",
+      "prior_entry_journal_id": "2026-04-20-pnut-buy-now-001",
+      "flip_reason": "velocity collapse 3,978 -> 283 txns/1h (-93%); signal's own invalidation rule 'txns <1,500/1h -> EXIT' fired",
+      "price_at_exit": 0.05800,
+      "price_at_signal": 0.05931,
+      "pct_move": -2.21,
+      "sl_hit": false,
+      "rule_based_exit": true,
+      "capital_impact_usd": 0,
+      "learning_for_future": "Require velocity >2,000/1h across >=2 consecutive 15m buckets before upgrading WAIT to BUY-NOW. Single-bucket velocity spike can flash-in-pan."
+    }
+  ],
+
+  "tail_skipped": [
+    { "ticker": "neet",     "score": 55, "reason": "+8.1% 24h solid but 1h cooling + txns collapsing (47)" },
+    { "ticker": "Fartcoin", "score": 45, "reason": "mature $200M, 1h flat, low velocity" },
+    { "ticker": "ALCH",     "score": 44, "reason": "AI cousin to arc with less momentum" },
+    { "ticker": "Pnut",     "score": 42, "reason": "thesis broken (see sell_now); re-evaluate in 24h" },
+    { "ticker": "jellyjelly","score": 42, "reason": "-1.9% 24h, activity collapsing" },
+    { "ticker": "Ban",      "score": 40, "reason": "-1.4% 24h, 25 txns/1h fading" },
+    { "ticker": "PYTHIA",   "score": 40, "reason": "flat, only 29 txns/1h dead" },
+    { "ticker": "Amiko",    "score": 38, "reason": "-2.9% 24h, thin activity" },
+    { "ticker": "pippin",   "score": 35, "reason": "still downtrending mature" },
+    { "ticker": "WOULD",    "score": 22, "reason": "3 txns/1h dead" },
+    { "ticker": "BAYC",     "score": 18, "reason": "0 txns/1h fully dead" }
+  ],
+
+  "avoid_rug_or_blowoff": [
+    { "ticker": "TARDI",    "reason": "+5457% 24h then -32.7% 1h = blow-off reversing" },
+    { "ticker": "HIGHER",   "reason": "+811% 24h, $49K liq fails gate + near 40% 1h cap" },
+    { "ticker": "UNCEROID", "reason": "-97.8% 24h = rugged" },
+    { "ticker": "MAGA",     "reason": "$173K liq fails $500K gate despite +148% 24h" },
+    { "ticker": "DUMBMONEY","reason": "$196K liq fails gate + 1h +31% approaching cap" },
+    { "ticker": "BELIEF",   "reason": "$416K liq just barely fails $500K gate" },
+    { "ticker": "BURNIE",   "reason": "$244K liq + -7% 1h cooling" },
+    { "ticker": "33-DeGods","reason": "<1h old + $20K liq fails multiple gates" },
+    { "ticker": "Grokipedia","reason": "$0 liq + 9h-old" },
+    { "ticker": "Akiyama",  "reason": "$0 liq + <1h old" },
+    { "ticker": "SNOWKOL",  "reason": "$0 liq + <1h old" }
+  ],
+
+  "action_summary": {
+    "buy_now": [],
+    "buy_watch_triggers": [
+      { "ticker": "SOL",     "venue": "Alpaca Paper", "size_usd": 2000, "sol_amount": 23, "trigger": "break >$86 with vol >=1.3x avg OR pullback $84.20-$84.50" },
+      { "ticker": "TROLL",   "venue": "Raydium (simulated)", "size_usd": 30, "trigger": "break >$0.0210 with 15m vol >=2x avg OR pullback $0.0185" },
+      { "ticker": "MOODENG", "venue": "PumpSwap (simulated)", "size_usd": 25, "trigger": "break >$0.0580 with txns >500/1h for 30min" },
+      { "ticker": "arc",     "venue": "PumpSwap (simulated)", "size_usd": 20, "trigger": "break >$0.0755 with price confirm >=2 bars" },
+      { "ticker": "BOME",    "venue": "Raydium (simulated)", "size_usd": 25, "trigger": "break >$0.00062 with 1h vol >$2M" }
+    ],
+    "hold_existing": [],
+    "sell_now": [
+      { "ticker": "Pnut", "venue": "Raydium", "reason": "velocity thesis broken; journal flipped CLOSED_MANUAL" }
+    ],
+    "deployment_paper_today_usd": 2000,
+    "deployment_paper_today_pct_equity": 2.0,
+    "deployment_simulated_memecoin_basket_usd": 125,
+    "reserve_paper_usd": 98000,
+    "reserve_paper_pct": 98,
+    "aggregate_sl_risk_paper_usd": 64,
+    "aggregate_sl_risk_paper_pct_equity": 0.064,
+    "top_next_action": "PAPER-TRADE: place Alpaca Paper LIMIT BUY for 23 SOL @ $84.20 (pullback-trigger entry) with bracket SL $82.50 TP1 $89 TP2 $92 TP3 $96. Say 'go' or 'execute paper' to confirm.",
+    "invalidation_triggers": [
+      "BTC breaks $74,000",
+      "SOL breaks $82.50",
+      "F&G drops below 25",
+      "Polymarket BTC-range-stays-YES flips to <50%"
+    ]
+  }
+}

@@ -33,7 +33,13 @@
       "mcp__alpaca__get_order_by_id",
       "mcp__alpaca__get_portfolio_history",
       "WebSearch",
-      "WebFetch"
+      "WebFetch",
+      "mcp__alpaca__get_crypto_snapshot",
+      "mcp__plugin_aria-trading_clodds__clodds_portfolio_summary",
+      "mcp__plugin_aria-trading_clodds__clodds_bags",
+      "mcp__plugin_aria-trading_clodds__clodds_pumpfun",
+      "mcp__plugin_aria-trading_clodds__clodds_polymarket_markets",
+      "mcp__alpaca__place_crypto_order"
     ],
     "deny": [
       "mcp__plugin_aria-trading_clodds__clodds_x_research"
